@@ -1,8 +1,15 @@
-"""Base HTTP client and authentication for Amazon Advertising API."""
+"""Base HTTP client and authentication for Amazon Advertising API.
+
+Supports multiple marketplaces:
+- NA (North America): https://advertising-api.amazon.com
+- EU (Europe): https://advertising-api-eu.amazon.com
+- FE (Far East): https://advertising-api-fe.amazon.com
+"""
 
 import asyncio
 import logging
 import time
+from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 import httpx
@@ -16,8 +23,49 @@ from .exceptions import (
 
 logger = logging.getLogger(__name__)
 
-BASE_URL = "https://advertising-api.amazon.com"
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
+
+
+class Marketplace(Enum):
+    """Amazon Advertising API marketplaces."""
+
+    NA = "https://advertising-api.amazon.com"
+    """North America (US, CA, MX, BR)"""
+
+    EU = "https://advertising-api-eu.amazon.com"
+    """Europe (UK, DE, FR, IT, ES, NL, AE, SE, PL, TR, EG, SA)"""
+
+    FE = "https://advertising-api-fe.amazon.com"
+    """Far East (JP, AU, SG, IN)"""
+
+
+# Country code to marketplace mapping
+COUNTRY_TO_MARKETPLACE: Dict[str, Marketplace] = {
+    # North America
+    "US": Marketplace.NA,
+    "CA": Marketplace.NA,
+    "MX": Marketplace.NA,
+    "BR": Marketplace.NA,
+    # Europe
+    "UK": Marketplace.EU,
+    "GB": Marketplace.EU,
+    "DE": Marketplace.EU,
+    "FR": Marketplace.EU,
+    "IT": Marketplace.EU,
+    "ES": Marketplace.EU,
+    "NL": Marketplace.EU,
+    "AE": Marketplace.EU,
+    "SE": Marketplace.EU,
+    "PL": Marketplace.EU,
+    "TR": Marketplace.EU,
+    "EG": Marketplace.EU,
+    "SA": Marketplace.EU,
+    # Far East
+    "JP": Marketplace.FE,
+    "AU": Marketplace.FE,
+    "SG": Marketplace.FE,
+    "IN": Marketplace.FE,
+}
 
 
 class BaseClient:
@@ -29,11 +77,23 @@ class BaseClient:
         profile_id: str,
         client_id: str,
         client_secret: str,
+        marketplace: Marketplace = Marketplace.NA,
     ):
+        """Initialize Amazon Ads client.
+
+        Args:
+            refresh_token: OAuth refresh token
+            profile_id: Amazon Advertising profile ID
+            client_id: LWA client ID
+            client_secret: LWA client secret
+            marketplace: API marketplace (NA, EU, FE). Defaults to NA.
+        """
         self.refresh_token = refresh_token
         self.profile_id = profile_id
         self.client_id = client_id
         self.client_secret = client_secret
+        self.marketplace = marketplace
+        self.base_url = marketplace.value
 
         self._http: Optional[httpx.AsyncClient] = None
         self._http_lock = asyncio.Lock()
@@ -47,7 +107,7 @@ class BaseClient:
             async with self._http_lock:
                 if self._http is None:
                     self._http = httpx.AsyncClient(
-                        base_url=BASE_URL,
+                        base_url=self.base_url,
                         timeout=httpx.Timeout(30.0, connect=5.0),
                         limits=httpx.Limits(
                             max_keepalive_connections=20,
@@ -104,7 +164,8 @@ class BaseClient:
             access_token = data["access_token"]
             self._access_token = access_token
             expires_in = data.get("expires_in", 3600)
-            self._token_expires_at = time.time() + expires_in
+            # Subtract 5 minutes for clock skew safety
+            self._token_expires_at = time.time() + expires_in - 300
 
             return access_token
 

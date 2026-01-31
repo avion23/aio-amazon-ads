@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from .base import BaseClient
+from .base import BaseClient, Marketplace
 from .services.sp import (
     Campaigns as SPCampaigns,
     AdGroups as SPAdGroups,
@@ -46,6 +46,16 @@ class AmazonAdsClient(BaseClient):
             # SP campaigns with auto-pagination
             async for campaign in client.sp.campaigns.list():
                 print(campaign["name"])
+
+    For EU marketplace (Germany, UK, France, etc.):
+        async with AmazonAdsClient(
+            refresh_token="...",
+            profile_id="...",
+            client_id="...",
+            client_secret="...",
+            marketplace=Marketplace.EU,
+        ) as client:
+            campaigns = await client.sp.campaigns.list()
     """
 
     def __init__(
@@ -54,6 +64,7 @@ class AmazonAdsClient(BaseClient):
         profile_id: str,
         client_id: str,
         client_secret: str,
+        marketplace: Marketplace = Marketplace.NA,
     ):
         """Initialize Amazon Ads client."""
         super().__init__(
@@ -61,6 +72,7 @@ class AmazonAdsClient(BaseClient):
             profile_id=profile_id,
             client_id=client_id,
             client_secret=client_secret,
+            marketplace=marketplace,
         )
 
         # Sponsored Products services

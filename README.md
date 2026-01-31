@@ -2,6 +2,9 @@
 
 **Unofficial** native async Python client for Amazon Advertising API.
 
+[![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 ⚠️ **Disclaimer:** This is an unofficial client. It is not affiliated with, endorsed by, or sponsored by Amazon.
 
 ## Features
@@ -11,6 +14,8 @@
 - **Resilient**: Built-in retry logic with exponential backoff and token refresh
 - **Namespaced API**: Clean interface with `client.sp.campaigns.list()`
 - **Auto-pagination**: Automatically handles paginated responses
+- **Professional retry**: Uses tenacity for battle-tested retry strategies
+- **Pure validation**: Validation logic extracted to pure functions
 
 ## Installation
 
@@ -30,6 +35,7 @@ async def main():
         profile_id="your_profile_id",
         client_id="your_client_id",
         client_secret="your_client_secret",
+        marketplace="EU",  # or Marketplace.EU
     ) as client:
         # List campaigns (auto-paginated)
         campaigns = []
@@ -64,12 +70,55 @@ asyncio.run(main())
 - **Targets**: list, get, create, edit, delete
 - **Reports**: create, get_status, download
 
+### Sponsored Brands V2 (16 endpoints)
+- **Campaigns**: list, get, create, edit, delete
+- **Ad Groups**: list, get, create, edit
+- **Keywords**: list, get, create, edit
+- **Ads**: list, get, create, edit
+
+### Sponsored Display V2 (8 endpoints)
+- **Campaigns**: list, get, create, edit, delete
+- **Ad Groups**: list, get, create
+
+### Portfolios (5 endpoints)
+- list, get, create, edit, delete
+
+### Profiles (2 endpoints)
+- list, get
+
 ## Authentication
 
 You need Amazon Advertising API credentials:
 - `refresh_token`: From LWA (Login with Amazon) OAuth flow
 - `profile_id`: Your Amazon Advertising profile ID (not Seller/Vendor ID)
 - `client_id` & `client_secret`: From your Amazon Developer account
+
+## Marketplace Support
+
+The client supports three regional marketplaces:
+
+- **NA** (North America): US, CA, MX, BR
+- **EU** (Europe): UK, DE, FR, IT, ES, NL, AE, SE, PL, TR, EG, SA  
+- **FE** (Far East): JP, AU, SG, IN
+
+### Usage
+
+```python
+from aio_amazon_ads import AmazonAdsClient, Marketplace
+
+# For EU marketplace
+async with AmazonAdsClient(
+    ...,
+    marketplace=Marketplace.EU,
+) as client:
+    campaigns = await client.sp.campaigns.list()
+
+# Or auto-detect from country code
+from aio_amazon_ads import COUNTRY_TO_MARKETPLACE
+marketplace = COUNTRY_TO_MARKETPLACE["DE"]  # Germany
+```
+
+**Important:** You must use the correct marketplace endpoint for your profile. Using the wrong endpoint will result in authentication errors.
 
 ## Error Handling
 
@@ -106,6 +155,12 @@ This client automatically:
 - Retries on 429 (Too Many Requests) with exponential backoff
 - Respects `Retry-After` headers
 - Prevents concurrent token refresh
+
+## Documentation
+
+- [Architecture](docs/ARCHITECTURE.md) - System design and patterns
+- [API Reference](docs/API_REFERENCE.md) - Complete API documentation
+- [Examples](examples/) - Usage examples
 
 ## License
 

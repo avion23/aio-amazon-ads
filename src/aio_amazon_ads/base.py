@@ -25,6 +25,7 @@ from tenacity import (
 from .exceptions import (
     AmazonAPIError,
     AuthenticationError,
+    ServerError,
     ThrottlingError,
     ValidationError,
 )
@@ -194,6 +195,8 @@ class BaseClient:
             )
         elif status_code == 400:
             return ValidationError(f"Validation error: {response_text}")
+        elif status_code >= 500:
+            return ServerError(f"Server error {status_code}: {response_text}")
         else:
             return AmazonAPIError(f"API error {status_code}: {response_text}")
 
@@ -201,7 +204,7 @@ class BaseClient:
         stop=stop_after_attempt(3),
         wait=wait_exponential_jitter(initial=1, max=60),
         retry=retry_if_exception_type(
-            (ThrottlingError, httpx.NetworkError, httpx.TimeoutException)
+            (ThrottlingError, ServerError, httpx.NetworkError, httpx.TimeoutException)
         ),
         before_sleep=before_sleep_log(logger, logging.WARNING),
         reraise=True,

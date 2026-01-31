@@ -48,8 +48,9 @@ class Targets(BaseService):
         Returns:
             Target dictionary
         """
-        if not target_id:
-            raise ValueError("target_id is required")
+        from ...validation import validate_target_id
+
+        validate_target_id(target_id)
 
         response = await self._request("GET", f"/v2/sp/targets/{target_id}")
         return response.json()
@@ -63,8 +64,9 @@ class Targets(BaseService):
         Returns:
             List of created target dictionaries
         """
-        if not targets:
-            raise ValueError("targets list cannot be empty")
+        from ...validation import validate_targets_for_create
+
+        validate_targets_for_create(targets)
 
         response = await self._request("POST", "/v2/sp/targets", json_data=targets)
         return response.json()
@@ -78,12 +80,9 @@ class Targets(BaseService):
         Returns:
             List of updated target dictionaries
         """
-        if not targets:
-            raise ValueError("targets list cannot be empty")
+        from ...validation import validate_targets_for_update
 
-        for target in targets:
-            if "targetId" not in target:
-                raise ValueError("Each target must have targetId")
+        validate_targets_for_update(targets)
 
         response = await self._request("PUT", "/v2/sp/targets", json_data=targets)
         return response.json()
@@ -97,8 +96,9 @@ class Targets(BaseService):
         Returns:
             Deletion response dictionary
         """
-        if not target_id:
-            raise ValueError("target_id is required")
+        from ...validation import validate_target_id
+
+        validate_target_id(target_id)
 
         response = await self._request("DELETE", f"/v2/sp/targets/{target_id}")
         return response.json()

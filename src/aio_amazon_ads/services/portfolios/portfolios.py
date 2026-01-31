@@ -41,8 +41,9 @@ class Portfolios(BaseService):
         Returns:
             Portfolio dictionary
         """
-        if not portfolio_id:
-            raise ValueError("portfolio_id is required")
+        from ...validation import validate_portfolio_id
+
+        validate_portfolio_id(portfolio_id)
 
         response = await self._request("GET", f"/v2/portfolios/{portfolio_id}")
         return response.json()
@@ -56,8 +57,9 @@ class Portfolios(BaseService):
         Returns:
             List of created portfolio dictionaries
         """
-        if not portfolios:
-            raise ValueError("portfolios list cannot be empty")
+        from ...validation import validate_portfolios_for_create
+
+        validate_portfolios_for_create(portfolios)
 
         response = await self._request("POST", "/v2/portfolios", json_data=portfolios)
         return response.json()
@@ -71,12 +73,9 @@ class Portfolios(BaseService):
         Returns:
             List of updated portfolio dictionaries
         """
-        if not portfolios:
-            raise ValueError("portfolios list cannot be empty")
+        from ...validation import validate_portfolios_for_update
 
-        for portfolio in portfolios:
-            if "portfolioId" not in portfolio:
-                raise ValueError("Each portfolio must have portfolioId")
+        validate_portfolios_for_update(portfolios)
 
         response = await self._request("PUT", "/v2/portfolios", json_data=portfolios)
         return response.json()
@@ -90,8 +89,9 @@ class Portfolios(BaseService):
         Returns:
             Deletion response dictionary
         """
-        if not portfolio_id:
-            raise ValueError("portfolio_id is required")
+        from ...validation import validate_portfolio_id
+
+        validate_portfolio_id(portfolio_id)
 
         response = await self._request("DELETE", f"/v2/portfolios/{portfolio_id}")
         return response.json()

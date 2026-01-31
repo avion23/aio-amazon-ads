@@ -2,6 +2,7 @@
 
 **Unofficial** native async Python client for Amazon Advertising API.
 
+[![CI](https://github.com/avion23/aio-amazon-ads/actions/workflows/ci.yml/badge.svg)](https://github.com/avion23/aio-amazon-ads/actions/workflows/ci.yml)
 [![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -204,9 +205,23 @@ The client automatically:
 
 ## Documentation
 
-- [Architecture](docs/ARCHITECTURE.md) - System design and patterns
-- [API Reference](docs/API_REFERENCE.md) - Complete API documentation
+- [Architecture](docs/ARCHITECTURE.md) - System design and architecture diagrams
 - [Examples](examples/) - Usage examples
+
+## CI/CD
+
+This project uses GitHub Actions for continuous integration:
+
+- **CI Pipeline**: Runs on every push and PR
+  - Linting with `ruff`
+  - Type checking with `mypy`
+  - Tests on Python 3.10, 3.11, 3.12, 3.13, 3.14
+  - Coverage reporting with Codecov
+
+- **Release Pipeline**: Triggered on version tags
+  - Automated PyPI publishing
+
+View the [CI status](https://github.com/avion23/aio-amazon-ads/actions/workflows/ci.yml).
 
 ## License
 

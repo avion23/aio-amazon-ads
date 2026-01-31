@@ -61,8 +61,9 @@ class Campaigns(BaseService):
         Returns:
             Campaign dictionary
         """
-        if not campaign_id:
-            raise ValueError("campaign_id is required")
+        from ...validation import validate_campaign_id
+
+        validate_campaign_id(campaign_id)
 
         response = await self._request("GET", f"/v2/sp/campaigns/{campaign_id}")
         return response.json()
@@ -76,8 +77,9 @@ class Campaigns(BaseService):
         Returns:
             List of created campaign dictionaries
         """
-        if not campaigns:
-            raise ValueError("campaigns list cannot be empty")
+        from ...validation import validate_campaigns_for_create
+
+        validate_campaigns_for_create(campaigns)
 
         response = await self._request("POST", "/v2/sp/campaigns", json_data=campaigns)
         return response.json()
@@ -91,12 +93,9 @@ class Campaigns(BaseService):
         Returns:
             List of updated campaign dictionaries
         """
-        if not campaigns:
-            raise ValueError("campaigns list cannot be empty")
+        from ...validation import validate_campaigns_for_update
 
-        for campaign in campaigns:
-            if "campaignId" not in campaign:
-                raise ValueError("Each campaign must have campaignId")
+        validate_campaigns_for_update(campaigns)
 
         response = await self._request("PUT", "/v2/sp/campaigns", json_data=campaigns)
         return response.json()
@@ -110,8 +109,9 @@ class Campaigns(BaseService):
         Returns:
             Deletion response dictionary
         """
-        if not campaign_id:
-            raise ValueError("campaign_id is required")
+        from ...validation import validate_campaign_id
+
+        validate_campaign_id(campaign_id)
 
         response = await self._request("DELETE", f"/v2/sp/campaigns/{campaign_id}")
         return response.json()

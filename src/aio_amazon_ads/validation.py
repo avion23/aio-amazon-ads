@@ -228,6 +228,28 @@ def validate_keywords_for_create(keywords: list[dict]) -> list[dict]:
     return keywords
 
 
+def validate_keywords_for_update(keywords: list[dict]) -> list[dict]:
+    """Validate keywords for update operation.
+
+    Args:
+        keywords: List of keywords to validate
+
+    Returns:
+        Validated keywords list
+
+    Raises:
+        ValueError: If validation fails
+    """
+    if not keywords:
+        raise ValueError("keywords list cannot be empty")
+
+    for i, keyword in enumerate(keywords):
+        if "keywordId" not in keyword:
+            raise ValueError(f"Keyword at index {i} must have keywordId")
+
+    return keywords
+
+
 # Product Ad validation
 
 
@@ -248,6 +270,99 @@ def validate_ad_id(ad_id: str | None) -> str:
     return ad_id
 
 
+def validate_product_ads_for_create(ads: list[dict]) -> list[dict]:
+    """Validate product ads for create operation.
+
+    Args:
+        ads: List of product ads to validate
+
+    Returns:
+        Validated product ads list
+
+    Raises:
+        ValueError: If validation fails
+    """
+    if not ads:
+        raise ValueError("ads list cannot be empty")
+    return ads
+
+
+def validate_product_ads_for_update(ads: list[dict]) -> list[dict]:
+    """Validate product ads for update operation.
+
+    Args:
+        ads: List of product ads to validate
+
+    Returns:
+        Validated product ads list
+
+    Raises:
+        ValueError: If validation fails
+    """
+    if not ads:
+        raise ValueError("ads list cannot be empty")
+
+    for i, ad in enumerate(ads):
+        if "adId" not in ad:
+            raise ValueError(f"Product ad at index {i} must have adId")
+
+    return ads
+
+
+# Negative Keyword validation
+
+
+def validate_negative_keyword_id(keyword_id: str | None) -> str:
+    """Validate and return negative keyword ID.
+
+    Args:
+        keyword_id: Negative keyword ID to validate
+
+    Returns:
+        Validated negative keyword ID
+
+    Raises:
+        ValueError: If keyword_id is empty or None
+    """
+    if not keyword_id:
+        raise ValueError("keyword_id is required")
+    return keyword_id
+
+
+def validate_negative_keywords_for_create(keywords: list[dict]) -> list[dict]:
+    """Validate negative keywords for create operation.
+
+    Args:
+        keywords: List of negative keywords to validate
+
+    Returns:
+        Validated negative keywords list
+
+    Raises:
+        ValueError: If validation fails
+    """
+    if not keywords:
+        raise ValueError("keywords list cannot be empty")
+    return keywords
+
+
+def validate_negative_keywords_for_delete(keyword_id: str | None) -> str:
+    """Validate negative keyword ID for delete operation.
+
+    Args:
+        keyword_id: Negative keyword ID to validate
+
+    Returns:
+        Validated negative keyword ID
+
+    Raises:
+        ValueError: If keyword_id is empty or None
+    """
+    if not keyword_id:
+        raise ValueError("keyword_id is required")
+    return keyword_id
+
+
 # Target validation
 
 
@@ -266,6 +381,45 @@ def validate_target_id(target_id: str | None) -> str:
     if not target_id:
         raise ValueError("target_id is required")
     return target_id
+
+
+def validate_targets_for_create(targets: list[dict]) -> list[dict]:
+    """Validate targets for create operation.
+
+    Args:
+        targets: List of targets to validate
+
+    Returns:
+        Validated targets list
+
+    Raises:
+        ValueError: If validation fails
+    """
+    if not targets:
+        raise ValueError("targets list cannot be empty")
+    return targets
+
+
+def validate_targets_for_update(targets: list[dict]) -> list[dict]:
+    """Validate targets for update operation.
+
+    Args:
+        targets: List of targets to validate
+
+    Returns:
+        Validated targets list
+
+    Raises:
+        ValueError: If validation fails
+    """
+    if not targets:
+        raise ValueError("targets list cannot be empty")
+
+    for i, target in enumerate(targets):
+        if "targetId" not in target:
+            raise ValueError(f"Target at index {i} must have targetId")
+
+    return targets
 
 
 # Portfolio validation

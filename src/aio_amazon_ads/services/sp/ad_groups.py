@@ -49,8 +49,9 @@ class AdGroups(BaseService):
         Returns:
             Ad group object
         """
-        if not ad_group_id:
-            raise ValueError("ad_group_id is required")
+        from ...validation import validate_ad_group_id
+
+        validate_ad_group_id(ad_group_id)
 
         response = await self._request("GET", f"/sp/adGroups/{ad_group_id}")
         return response.json()
@@ -66,8 +67,9 @@ class AdGroups(BaseService):
         Returns:
             List of created ad group objects
         """
-        if not ad_groups:
-            raise ValueError("ad_groups list cannot be empty")
+        from ...validation import validate_ad_groups_for_create
+
+        validate_ad_groups_for_create(ad_groups)
 
         response = await self._request("POST", "/sp/adGroups", json_data=ad_groups)
         return response.json()
@@ -81,8 +83,9 @@ class AdGroups(BaseService):
         Returns:
             List of updated ad group objects
         """
-        if not ad_groups:
-            raise ValueError("ad_groups list cannot be empty")
+        from ...validation import validate_ad_groups_for_update
+
+        validate_ad_groups_for_update(ad_groups)
 
         response = await self._request("PUT", "/sp/adGroups", json_data=ad_groups)
         return response.json()
@@ -96,8 +99,9 @@ class AdGroups(BaseService):
         Returns:
             Deletion response
         """
-        if not ad_group_id:
-            raise ValueError("ad_group_id is required")
+        from ...validation import validate_ad_group_id
+
+        validate_ad_group_id(ad_group_id)
 
         response = await self._request("DELETE", f"/sp/adGroups/{ad_group_id}")
         return response.json()

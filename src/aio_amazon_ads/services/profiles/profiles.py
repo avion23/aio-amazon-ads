@@ -38,8 +38,9 @@ class Profiles(BaseService):
         Returns:
             Profile dictionary
         """
-        if not profile_id:
-            raise ValueError("profile_id is required")
+        from ...validation import validate_profile_id
+
+        validate_profile_id(profile_id)
 
         response = await self._request("GET", f"/v2/profiles/{profile_id}")
         return response.json()

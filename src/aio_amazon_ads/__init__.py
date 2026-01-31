@@ -5,6 +5,7 @@ from .client import AmazonAdsClient
 from .exceptions import (
     AmazonAPIError,
     AuthenticationError,
+    ServerError,
     ThrottlingError,
     ValidationError,
 )
@@ -16,6 +17,7 @@ __all__ = [
     "COUNTRY_TO_MARKETPLACE",
     "AmazonAPIError",
     "AuthenticationError",
+    "ServerError",
     "ThrottlingError",
     "ValidationError",
 ]

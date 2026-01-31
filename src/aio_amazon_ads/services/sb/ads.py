@@ -38,8 +38,9 @@ class Ads(BaseService):
         Returns:
             Ad dictionary
         """
-        if not ad_id:
-            raise ValueError("ad_id is required")
+        from ...validation import validate_ad_id
+
+        validate_ad_id(ad_id)
 
         response = await self._request("GET", f"/v2/sb/ads/{ad_id}")
         return response.json()
@@ -53,8 +54,9 @@ class Ads(BaseService):
         Returns:
             List of created ad dictionaries
         """
-        if not ads:
-            raise ValueError("ads list cannot be empty")
+        from ...validation import validate_product_ads_for_create
+
+        validate_product_ads_for_create(ads)
 
         response = await self._request("POST", "/v2/sb/ads", json_data=ads)
         return response.json()
@@ -68,12 +70,9 @@ class Ads(BaseService):
         Returns:
             List of updated ad dictionaries
         """
-        if not ads:
-            raise ValueError("ads list cannot be empty")
+        from ...validation import validate_product_ads_for_update
 
-        for ad in ads:
-            if "adId" not in ad:
-                raise ValueError("Each ad must have adId")
+        validate_product_ads_for_update(ads)
 
         response = await self._request("PUT", "/v2/sb/ads", json_data=ads)
         return response.json()

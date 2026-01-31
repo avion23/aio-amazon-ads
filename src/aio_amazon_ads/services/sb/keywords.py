@@ -38,8 +38,9 @@ class Keywords(BaseService):
         Returns:
             Keyword dictionary
         """
-        if not keyword_id:
-            raise ValueError("keyword_id is required")
+        from ...validation import validate_keyword_id
+
+        validate_keyword_id(keyword_id)
 
         response = await self._request("GET", f"/v2/sb/keywords/{keyword_id}")
         return response.json()
@@ -53,8 +54,9 @@ class Keywords(BaseService):
         Returns:
             List of created keyword dictionaries
         """
-        if not keywords:
-            raise ValueError("keywords list cannot be empty")
+        from ...validation import validate_keywords_for_create
+
+        validate_keywords_for_create(keywords)
 
         response = await self._request("POST", "/v2/sb/keywords", json_data=keywords)
         return response.json()
@@ -68,12 +70,9 @@ class Keywords(BaseService):
         Returns:
             List of updated keyword dictionaries
         """
-        if not keywords:
-            raise ValueError("keywords list cannot be empty")
+        from ...validation import validate_keywords_for_update
 
-        for keyword in keywords:
-            if "keywordId" not in keyword:
-                raise ValueError("Each keyword must have keywordId")
+        validate_keywords_for_update(keywords)
 
         response = await self._request("PUT", "/v2/sb/keywords", json_data=keywords)
         return response.json()

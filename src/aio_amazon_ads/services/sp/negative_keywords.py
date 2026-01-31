@@ -43,8 +43,9 @@ class NegativeKeywords(BaseService):
         Returns:
             List of created negative keyword dictionaries
         """
-        if not keywords:
-            raise ValueError("keywords list cannot be empty")
+        from ...validation import validate_negative_keywords_for_create
+
+        validate_negative_keywords_for_create(keywords)
 
         response = await self._request("POST", "/v2/sp/negativeKeywords", json_data=keywords)
         return response.json()
@@ -58,8 +59,9 @@ class NegativeKeywords(BaseService):
         Returns:
             Deletion response dictionary
         """
-        if not keyword_id:
-            raise ValueError("keyword_id is required")
+        from ...validation import validate_negative_keywords_for_delete
+
+        validate_negative_keywords_for_delete(keyword_id)
 
         response = await self._request("DELETE", f"/v2/sp/negativeKeywords/{keyword_id}")
         return response.json()

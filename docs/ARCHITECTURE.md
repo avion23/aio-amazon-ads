@@ -1,186 +1,319 @@
-# aio-amazon-ads Architecture
+# Architecture
 
-## Overview
+## System Overview
 
-This document describes the architecture of `aio-amazon-ads`, a native async Python client for the Amazon Advertising API.
+```mermaid
+flowchart TB
+    subgraph Client["AmazonAdsClient"]
+        SP["sp (Sponsored Products)"]
+        SB["sb (Sponsored Brands)"]
+        SD["sd (Sponsored Display)"]
+        Portfolios["portfolios"]
+        Profiles["profiles"]
+    end
 
-## Design Principles
+    subgraph Services["Service Layer"]
+        Campaigns["Campaigns"]
+        AdGroups["Ad Groups"]
+        Keywords["Keywords"]
+        ProductAds["Product Ads"]
+        Reports["Reports"]
+    end
 
-1. **Uniform Interface**: All services expose the same CRUD pattern
-2. **Type Safety**: Pydantic models for validation and IDE support
-3. **Pure Functions**: Validation logic isolated with no side effects
-4. **Professional Retry**: Tenacity library for exponential backoff
-5. **Testability**: Dependency injection and Protocol-based interfaces
+    subgraph HTTP["HTTP Layer"]
+        BaseClient["BaseClient"]
+        Retry["Tenacity Retry"]
+        Auth["Auth Manager"]
+    end
 
-## System Architecture
+    SP --> Campaigns
+    SP --> AdGroups
+    SP --> Keywords
+    SP --> ProductAds
+    SP --> Reports
 
-```
-AmazonAdsClient (Entry Point)
-    │
-    ├─── Sponsored Products (sp)
-    │       ├── Campaigns (31 endpoints)
-    │       ├── AdGroups
-    │       ├── Keywords
-    │       ├── ProductAds
-    │       ├── NegativeKeywords
-    │       ├── Targets
-    │       └── Reports
-    │
-    ├─── Sponsored Brands (sb)
-    │       ├── Campaigns (16 endpoints)
-    │       ├── AdGroups
-    │       ├── Keywords
-    │       └── Ads
-    │
-    ├─── Sponsored Display (sd)
-    │       ├── Campaigns (8 endpoints)
-    │       └── AdGroups
-    │
-    ├─── Portfolios (5 endpoints)
-    │
-    └─── Profiles (2 endpoints)
-```
+    Campaigns --> BaseClient
+    AdGroups --> BaseClient
+    Keywords --> BaseClient
+    ProductAds --> BaseClient
+    Reports --> BaseClient
 
-## Service Pattern
-
-All services follow a uniform CRUD interface:
-
-```python
-class CampaignsService:
-    async def list(self, **filters) -> AsyncGenerator[Dict, None]
-    async def get(self, campaign_id: str) -> Dict
-    async def create(self, campaigns: List[Dict]) -> List[Dict]
-    async def edit(self, campaigns: List[Dict]) -> List[Dict]
-    async def delete(self, campaign_id: str) -> Dict
+    BaseClient --> Retry
+    BaseClient --> Auth
+    Auth --> Amazon["Amazon OAuth"]
+    BaseClient --> API["Amazon Advertising API"]
 ```
 
-## Pagination Strategy
+## Request Flow
 
-All `list()` methods return `AsyncGenerator` for automatic pagination:
+```mermaid
+sequenceDiagram
+    participant User
+    participant Client as AmazonAdsClient
+    participant Service as CampaignService
+    participant Base as BaseClient
+    participant Retry as Tenacity
+    participant Auth as AuthManager
+    participant Amazon as Amazon API
 
-```python
-# Client code
-async for campaign in client.sp.campaigns.list(stateFilter="ENABLED"):
-    process(campaign)
-
-# Internal implementation
-params = filters.copy()
-while True:
-    response = await self._request("GET", endpoint, params=params)
-    data = response.json()
-    
-    for item in data.get("items", []):
-        yield item
-    
-    if not data.get("nextToken"):
-        break
-    params["nextToken"] = data["nextToken"]
-```
-
-## Retry Strategy
-
-Uses tenacity for professional retry logic:
-
-```python
-from tenacity import retry, stop_after_attempt, wait_exponential
-
-@retry(
-    stop=stop_after_attempt(3),
-    wait=wait_exponential(multiplier=1, min=2, max=60),
-    retry=retry_if_exception_type((ThrottlingError, NetworkError))
-)
-async def request(self, method: str, path: str, ...) -> httpx.Response:
-    ...
+    User->>Client: client.sp.campaigns.list()
+    Client->>Service: list()
+    Service->>Base: _paginated_get()
+    Base->>Retry: retry wrapper
+    Retry->>Base: execute request
+    Base->>Auth: get_access_token()
+    Auth->>Auth: check token expiry
+    alt token expired
+        Auth->>Amazon: refresh token
+        Amazon-->>Auth: new access_token
+    end
+    Auth-->>Base: access_token
+    Base->>Amazon: GET /sp/campaigns
+    Amazon-->>Base: response + X-Amzn-Request-Id
+    Base-->>Service: parsed response
+    Service-->>Client: AsyncGenerator
+    Client-->>User: campaigns
 ```
 
 ## Authentication Flow
 
+```mermaid
+sequenceDiagram
+    participant Client as AmazonAdsClient
+    participant Auth as AuthManager
+    participant Lock as asyncio.Lock
+    participant Amazon as Amazon OAuth
+
+    Client->>Auth: get_access_token()
+    Auth->>Auth: check expiry
+    alt token valid
+        Auth-->>Client: return cached token
+    else token expired
+        Auth->>Lock: acquire()
+        Lock->>Auth: lock acquired
+        Auth->>Auth: double-check expiry
+        alt still expired
+            Auth->>Amazon: POST /auth/o2/token
+            Amazon-->>Auth: access_token + expires_in
+            Auth->>Auth: cache token
+        end
+        Auth->>Lock: release()
+        Auth-->>Client: return token
+    end
 ```
-1. Client makes API call
-2. Check if access token is valid (not expired)
-3. If expired, acquire lock and refresh token
-4. Use refreshed token for API call
-5. Handle 401/403 errors with automatic retry
+
+## Retry Logic
+
+```mermaid
+flowchart TD
+    Request[HTTP Request] --> Error{Error Type?}
+
+    Error -->|Network Error| Retry[Retry with Backoff]
+    Error -->|Timeout| Retry
+    Error -->|429 Rate Limit| Retry
+    Error -->|401 Unauthorized| Refresh[Refresh Token]
+
+    Refresh --> Retry
+    Retry --> MaxRetries{Max Retries?}
+    MaxRetries -->|No| Request
+    MaxRetries -->|Yes| Fail[Raise Exception]
+
+    Error -->|4xx Client Error| ClientError[Raise AmazonAPIError]
+    Error -->|5xx Server Error| Retry
+    Error -->|Success| Return[Return Response]
+
+    Retry --> Wait[Exponential Backoff + Jitter]
+    Wait --> Request
 ```
 
-## Validation Architecture
+## Pagination Flow
 
-Validation is separated into pure functions:
+```mermaid
+flowchart LR
+    Start[Start Pagination] --> First[Request Page 1]
+    First --> Yield[Yield Items]
+    Yield --> More{More Pages?}
+    More -->|Yes| Next[Request Next Page]
+    Next --> Yield
+    More -->|No| End[End]
 
+    subgraph AutoPagination
+        direction TB
+        First
+        Next
+        Yield
+        More
+    end
+```
+
+## Package Structure
+
+```mermaid
+flowchart TB
+    subgraph Package["aio_amazon_ads"]
+        Init["__init__.py<br/>Exports & Marketplace"]
+        Client["client.py<br/>AmazonAdsClient"]
+        Base["base.py<br/>BaseClient + Retry"]
+        Exceptions["exceptions.py<br/>Error Classes"]
+        Validation["validation.py<br/>Input Validation"]
+
+        subgraph Services["services/"]
+            SP["sp/<br/>31 endpoints"]
+            SB["sb/<br/>16 endpoints"]
+            SD["sd/<br/>8 endpoints"]
+            Portfolios["portfolios/<br/>5 endpoints"]
+            Profiles["profiles/<br/>2 endpoints"]
+        end
+
+        subgraph Models["models/"]
+            Pydantic["Pydantic Models<br/>(optional)"]
+        end
+    end
+
+    Client --> Base
+    Client --> SP
+    Client --> SB
+    Client --> SD
+    Client --> Portfolios
+    Client --> Profiles
+
+    SP --> Base
+    SB --> Base
+    SD --> Base
+    Portfolios --> Base
+    Profiles --> Base
+
+    Base --> Exceptions
+    Services --> Validation
+```
+
+## Data Flow
+
+```mermaid
+flowchart LR
+    subgraph Input
+        Dict["dict/list"]
+        Validation["Validation"]
+    end
+
+    subgraph Processing
+        Service["Service Method"]
+        Base["BaseClient.request()"]
+        Retry["Tenacity Retry"]
+    end
+
+    subgraph Output
+        Response["API Response"]
+        Parsed["Parsed JSON"]
+        Generator["AsyncGenerator"]
+    end
+
+    Dict --> Validation
+    Validation --> Service
+    Service --> Base
+    Base --> Retry
+    Retry --> Response
+    Response --> Parsed
+    Parsed --> Generator
+```
+
+## Error Hierarchy
+
+```mermaid
+classDiagram
+    class Exception
+    class AmazonAPIError
+    class AuthenticationError
+    class ThrottlingError
+    class ValidationError
+    class NotFoundError
+
+    Exception <|-- AmazonAPIError
+    AmazonAPIError <|-- AuthenticationError
+    AmazonAPIError <|-- ThrottlingError
+    AmazonAPIError <|-- ValidationError
+    AmazonAPIError <|-- NotFoundError
+```
+
+## CI/CD Pipeline
+
+```mermaid
+flowchart LR
+    subgraph Local
+        Code[Code Changes]
+        Lint[ruff check/format]
+        TypeCheck[mypy]
+        Test[pytest]
+    end
+
+    subgraph GitHub
+        Push[Push to GitHub]
+        CI[GitHub Actions CI]
+        Test310[Python 3.10]
+        Test311[Python 3.11]
+        Test312[Python 3.12]
+        Test313[Python 3.13]
+        Test314[Python 3.14]
+        Coverage[Codecov]
+    end
+
+    subgraph Release
+        Tag[Version Tag]
+        Release[Release Workflow]
+        PyPI[PyPI Publish]
+    end
+
+    Code --> Lint
+    Lint --> TypeCheck
+    TypeCheck --> Test
+    Test --> Push
+    Push --> CI
+    CI --> Test310
+    CI --> Test311
+    CI --> Test312
+    CI --> Test313
+    CI --> Test314
+    Test310 --> Coverage
+    Test311 --> Coverage
+    Test312 --> Coverage
+    Test313 --> Coverage
+    Test314 --> Coverage
+
+    Test --> Tag
+    Tag --> Release
+    Release --> PyPI
+```
+
+## Key Design Decisions
+
+### 1. Native Async
+- Built on `httpx` for true async/await
+- No sync wrapper overhead
+- Proper connection pooling
+
+### 2. Service Namespacing
 ```python
-# validation.py - Pure functions, no side effects
-def validate_campaign_state(state: Optional[str]) -> None:
-    if state and state not in VALID_STATES:
-        raise ValueError(f"Invalid state: {state}")
-
-def validate_campaign_id(campaign_id: Optional[str]) -> str:
-    if not campaign_id:
-        raise ValueError("campaign_id is required")
-    return campaign_id
+client.sp.campaigns.list()      # Sponsored Products
+client.sb.campaigns.list()      # Sponsored Brands
+client.sd.campaigns.list()      # Sponsored Display
 ```
 
-## Testing Strategy
+### 3. Auto-Pagination
+- All `list()` methods return `AsyncGenerator`
+- Automatically fetches all pages
+- Memory efficient for large datasets
 
-```
-Test Pyramid:
-    
-    Integration Tests (respx)
-    ├── HTTP layer mocking
-    ├── Auth flow testing
-    └── Retry logic verification
-    
-    Unit Tests
-    ├── Service logic
-    ├── Validation functions
-    └── Error handling
-    
-    Pure Function Tests
-    ├── Edge cases
-    └── Input validation
-```
+### 4. Tenacity Retry
+- Exponential backoff with jitter
+- Configurable retry count
+- Handles 401, 429, network errors
 
-## Comparison with Open Source
+### 5. Token Management
+- Automatic refresh on expiry
+- Lock prevents concurrent refresh
+- Transparent to user
 
-| Feature | python-amazon-ad-api | aio-amazon-ads |
-|---------|---------------------|----------------|
-| Async Support | ❌ Sync only | ✅ Native async |
-| Pagination | ❌ Manual | ✅ Auto (AsyncGenerator) |
-| Retry Logic | ⚠️ Basic | ✅ Tenacity (exponential) |
-| Type Safety | ⚠️ Dicts | ✅ Pydantic models |
-| Interface | ❌ Inconsistent | ✅ Uniform CRUD |
-| Testability | ⚠️ Hard to mock | ✅ Protocol-based DI |
-
-## File Structure
-
-```
-aio-amazon-ads/
-├── src/aio_amazon_ads/
-│   ├── __init__.py          # Public exports
-│   ├── client.py            # Main client class
-│   ├── base.py              # Base client with HTTP/retry
-│   ├── exceptions.py        # Custom exceptions
-│   ├── validation.py        # Pure validation functions
-│   ├── models/              # Pydantic models
-│   │   └── sp.py
-│   └── services/            # API services
-│       ├── sp/
-│       ├── sb/
-│       ├── sd/
-│       ├── portfolios/
-│       └── profiles/
-├── tests/
-│   ├── unit/
-│   └── integration/
-├── docs/
-│   ├── ARCHITECTURE.md
-│   └── API_REFERENCE.md
-└── examples/
-```
-
-## Future Improvements
-
-1. **Caching**: LRU cache for immutable data (profiles)
-2. **Batching**: Automatic request batching for bulk operations
-3. **Metrics**: Prometheus metrics for API call monitoring
-4. **Circuit Breaker**: Fail-fast when API is unavailable
-5. **Regional Endpoints**: Support for EU/FE endpoints
+### 6. Observability
+- Structured logging with correlation IDs
+- X-Amzn-Request-Id tracking
+- Debug logging for all requests

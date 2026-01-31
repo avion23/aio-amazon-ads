@@ -38,8 +38,9 @@ class AdGroups(BaseService):
         Returns:
             Ad group dictionary
         """
-        if not ad_group_id:
-            raise ValueError("ad_group_id is required")
+        from ...validation import validate_ad_group_id
+
+        validate_ad_group_id(ad_group_id)
 
         response = await self._request("GET", f"/v2/sb/adGroups/{ad_group_id}")
         return response.json()
@@ -53,8 +54,9 @@ class AdGroups(BaseService):
         Returns:
             List of created ad group dictionaries
         """
-        if not ad_groups:
-            raise ValueError("ad_groups list cannot be empty")
+        from ...validation import validate_ad_groups_for_create
+
+        validate_ad_groups_for_create(ad_groups)
 
         response = await self._request("POST", "/v2/sb/adGroups", json_data=ad_groups)
         return response.json()
@@ -68,12 +70,9 @@ class AdGroups(BaseService):
         Returns:
             List of updated ad group dictionaries
         """
-        if not ad_groups:
-            raise ValueError("ad_groups list cannot be empty")
+        from ...validation import validate_ad_groups_for_update
 
-        for ad_group in ad_groups:
-            if "adGroupId" not in ad_group:
-                raise ValueError("Each ad group must have adGroupId")
+        validate_ad_groups_for_update(ad_groups)
 
         response = await self._request("PUT", "/v2/sb/adGroups", json_data=ad_groups)
         return response.json()

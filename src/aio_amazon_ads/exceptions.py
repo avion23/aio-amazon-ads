@@ -25,3 +25,9 @@ class ValidationError(AmazonAPIError):
     """Raised when request validation fails (400)."""
 
     pass
+
+
+class ServerError(AmazonAPIError):
+    """Raised when server error occurs (5xx)."""
+
+    pass

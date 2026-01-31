@@ -1,8 +1,7 @@
 """Profiles service and models."""
 
-from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from ...base import BaseService
 
@@ -12,8 +11,8 @@ class Profile(BaseModel):
     countryCode: str
     currencyCode: str
     timezone: str
-    accountName: Optional[str] = None
-    type: Optional[str] = None
+    accountName: str | None = None
+    type: str | None = None
 
     class Config:
         extra = "ignore"
@@ -22,7 +21,7 @@ class Profile(BaseModel):
 class Profiles(BaseService):
     """Profile management service."""
 
-    async def list(self) -> List[Dict]:
+    async def list(self) -> list[dict]:
         """List all profiles.
 
         Returns:
@@ -31,7 +30,7 @@ class Profiles(BaseService):
         response = await self._request("GET", "/v2/profiles")
         return response.json()
 
-    async def get(self, profile_id: str) -> Dict:
+    async def get(self, profile_id: str) -> dict:
         """Get a single profile.
 
         Args:

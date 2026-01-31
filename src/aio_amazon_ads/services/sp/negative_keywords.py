@@ -1,6 +1,8 @@
 """Sponsored Products negative keywords service."""
 
-from typing import Any, AsyncGenerator, Dict, List, Optional
+import builtins
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from ...base import BaseService
 
@@ -10,9 +12,9 @@ class NegativeKeywords(BaseService):
 
     async def list(
         self,
-        campaign_id_filter: Optional[str] = None,
-        ad_group_id_filter: Optional[str] = None,
-    ) -> AsyncGenerator[Dict, None]:
+        campaign_id_filter: str | None = None,
+        ad_group_id_filter: str | None = None,
+    ) -> AsyncGenerator[dict, None]:
         """List Sponsored Products negative keywords.
 
         Args:
@@ -22,7 +24,7 @@ class NegativeKeywords(BaseService):
         Yields:
             Negative keyword dictionaries
         """
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if campaign_id_filter is not None:
             params["campaignIdFilter"] = campaign_id_filter
         if ad_group_id_filter is not None:
@@ -32,7 +34,7 @@ class NegativeKeywords(BaseService):
         for item in response.json():
             yield item
 
-    async def create(self, keywords: List[Dict]) -> List[Dict]:
+    async def create(self, keywords: builtins.list[dict]) -> builtins.list[dict]:
         """Create Sponsored Products negative keywords.
 
         Args:
@@ -47,7 +49,7 @@ class NegativeKeywords(BaseService):
         response = await self._request("POST", "/v2/sp/negativeKeywords", json_data=keywords)
         return response.json()
 
-    async def delete(self, keyword_id: str) -> Dict:
+    async def delete(self, keyword_id: str) -> dict:
         """Delete a Sponsored Products negative keyword.
 
         Args:

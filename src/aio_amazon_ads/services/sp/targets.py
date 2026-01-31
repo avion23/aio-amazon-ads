@@ -1,6 +1,8 @@
 """Sponsored Products targets service."""
 
-from typing import Any, AsyncGenerator, Dict, List, Optional
+import builtins
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from ...base import BaseService
 
@@ -10,10 +12,10 @@ class Targets(BaseService):
 
     async def list(
         self,
-        campaign_id_filter: Optional[str] = None,
-        ad_group_id_filter: Optional[str] = None,
-        target_id_filter: Optional[str] = None,
-    ) -> AsyncGenerator[Dict, None]:
+        campaign_id_filter: str | None = None,
+        ad_group_id_filter: str | None = None,
+        target_id_filter: str | None = None,
+    ) -> AsyncGenerator[dict, None]:
         """List Sponsored Products targets.
 
         Args:
@@ -24,7 +26,7 @@ class Targets(BaseService):
         Yields:
             Target dictionaries
         """
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if campaign_id_filter is not None:
             params["campaignIdFilter"] = campaign_id_filter
         if ad_group_id_filter is not None:
@@ -37,7 +39,7 @@ class Targets(BaseService):
         for target in targets:
             yield target
 
-    async def get(self, target_id: str) -> Dict:
+    async def get(self, target_id: str) -> dict:
         """Get a specific Sponsored Products target.
 
         Args:
@@ -52,7 +54,7 @@ class Targets(BaseService):
         response = await self._request("GET", f"/v2/sp/targets/{target_id}")
         return response.json()
 
-    async def create(self, targets: List[Dict]) -> List[Dict]:
+    async def create(self, targets: builtins.list[dict]) -> builtins.list[dict]:
         """Create Sponsored Products targets.
 
         Args:
@@ -67,7 +69,7 @@ class Targets(BaseService):
         response = await self._request("POST", "/v2/sp/targets", json_data=targets)
         return response.json()
 
-    async def edit(self, targets: List[Dict]) -> List[Dict]:
+    async def edit(self, targets: builtins.list[dict]) -> builtins.list[dict]:
         """Edit Sponsored Products targets.
 
         Args:
@@ -86,7 +88,7 @@ class Targets(BaseService):
         response = await self._request("PUT", "/v2/sp/targets", json_data=targets)
         return response.json()
 
-    async def delete(self, target_id: str) -> Dict:
+    async def delete(self, target_id: str) -> dict:
         """Delete a Sponsored Products target.
 
         Args:

@@ -3,7 +3,6 @@
 All functions are pure (no side effects) and follow guard clause pattern.
 """
 
-from typing import Any, Dict, List, Optional
 
 
 # Campaign validation
@@ -12,7 +11,7 @@ VALID_TARGETING_TYPES = frozenset(["MANUAL", "AUTO"])
 VALID_CAMPAIGN_TYPES = frozenset(["sponsoredProducts", "sponsoredBrands", "sponsoredDisplay"])
 
 
-def validate_campaign_state(state: Optional[str]) -> None:
+def validate_campaign_state(state: str | None) -> None:
     """Validate campaign state.
 
     Args:
@@ -27,7 +26,7 @@ def validate_campaign_state(state: Optional[str]) -> None:
         raise ValueError(f"Invalid state: {state}. Must be one of: {VALID_CAMPAIGN_STATES}")
 
 
-def validate_targeting_type(targeting_type: Optional[str]) -> None:
+def validate_targeting_type(targeting_type: str | None) -> None:
     """Validate targeting type.
 
     Args:
@@ -44,7 +43,7 @@ def validate_targeting_type(targeting_type: Optional[str]) -> None:
         )
 
 
-def validate_campaign_type(campaign_type: Optional[str]) -> None:
+def validate_campaign_type(campaign_type: str | None) -> None:
     """Validate campaign type.
 
     Args:
@@ -61,7 +60,7 @@ def validate_campaign_type(campaign_type: Optional[str]) -> None:
         )
 
 
-def validate_campaign_id(campaign_id: Optional[str]) -> str:
+def validate_campaign_id(campaign_id: str | None) -> str:
     """Validate and return campaign ID.
 
     Args:
@@ -78,7 +77,7 @@ def validate_campaign_id(campaign_id: Optional[str]) -> str:
     return campaign_id
 
 
-def validate_campaigns_for_update(campaigns: List[Dict]) -> List[Dict]:
+def validate_campaigns_for_update(campaigns: list[dict]) -> list[dict]:
     """Validate campaigns for update operation.
 
     Args:
@@ -100,7 +99,7 @@ def validate_campaigns_for_update(campaigns: List[Dict]) -> List[Dict]:
     return campaigns
 
 
-def validate_campaigns_for_create(campaigns: List[Dict]) -> List[Dict]:
+def validate_campaigns_for_create(campaigns: list[dict]) -> list[dict]:
     """Validate campaigns for create operation.
 
     Args:
@@ -120,7 +119,7 @@ def validate_campaigns_for_create(campaigns: List[Dict]) -> List[Dict]:
 # Ad Group validation
 
 
-def validate_ad_group_id(ad_group_id: Optional[str]) -> str:
+def validate_ad_group_id(ad_group_id: str | None) -> str:
     """Validate and return ad group ID.
 
     Args:
@@ -137,7 +136,7 @@ def validate_ad_group_id(ad_group_id: Optional[str]) -> str:
     return ad_group_id
 
 
-def validate_ad_groups_for_update(ad_groups: List[Dict]) -> List[Dict]:
+def validate_ad_groups_for_update(ad_groups: list[dict]) -> list[dict]:
     """Validate ad groups for update operation.
 
     Args:
@@ -159,7 +158,7 @@ def validate_ad_groups_for_update(ad_groups: List[Dict]) -> List[Dict]:
     return ad_groups
 
 
-def validate_ad_groups_for_create(ad_groups: List[Dict]) -> List[Dict]:
+def validate_ad_groups_for_create(ad_groups: list[dict]) -> list[dict]:
     """Validate ad groups for create operation.
 
     Args:
@@ -180,7 +179,7 @@ def validate_ad_groups_for_create(ad_groups: List[Dict]) -> List[Dict]:
 VALID_KEYWORD_MATCH_TYPES = frozenset(["EXACT", "PHRASE", "BROAD"])
 
 
-def validate_keyword_match_type(match_type: Optional[str]) -> None:
+def validate_keyword_match_type(match_type: str | None) -> None:
     """Validate keyword match type.
 
     Args:
@@ -197,7 +196,7 @@ def validate_keyword_match_type(match_type: Optional[str]) -> None:
         )
 
 
-def validate_keyword_id(keyword_id: Optional[str]) -> str:
+def validate_keyword_id(keyword_id: str | None) -> str:
     """Validate and return keyword ID.
 
     Args:
@@ -214,7 +213,7 @@ def validate_keyword_id(keyword_id: Optional[str]) -> str:
     return keyword_id
 
 
-def validate_keywords_for_create(keywords: List[Dict]) -> List[Dict]:
+def validate_keywords_for_create(keywords: list[dict]) -> list[dict]:
     """Validate keywords for create operation.
 
     Args:
@@ -234,7 +233,7 @@ def validate_keywords_for_create(keywords: List[Dict]) -> List[Dict]:
 # Product Ad validation
 
 
-def validate_ad_id(ad_id: Optional[str]) -> str:
+def validate_ad_id(ad_id: str | None) -> str:
     """Validate and return ad ID.
 
     Args:
@@ -254,7 +253,7 @@ def validate_ad_id(ad_id: Optional[str]) -> str:
 # Target validation
 
 
-def validate_target_id(target_id: Optional[str]) -> str:
+def validate_target_id(target_id: str | None) -> str:
     """Validate and return target ID.
 
     Args:
@@ -274,7 +273,7 @@ def validate_target_id(target_id: Optional[str]) -> str:
 # Portfolio validation
 
 
-def validate_portfolio_id(portfolio_id: Optional[str]) -> str:
+def validate_portfolio_id(portfolio_id: str | None) -> str:
     """Validate and return portfolio ID.
 
     Args:
@@ -291,7 +290,7 @@ def validate_portfolio_id(portfolio_id: Optional[str]) -> str:
     return portfolio_id
 
 
-def validate_portfolios_for_update(portfolios: List[Dict]) -> List[Dict]:
+def validate_portfolios_for_update(portfolios: list[dict]) -> list[dict]:
     """Validate portfolios for update operation.
 
     Args:
@@ -313,7 +312,7 @@ def validate_portfolios_for_update(portfolios: List[Dict]) -> List[Dict]:
     return portfolios
 
 
-def validate_portfolios_for_create(portfolios: List[Dict]) -> List[Dict]:
+def validate_portfolios_for_create(portfolios: list[dict]) -> list[dict]:
     """Validate portfolios for create operation.
 
     Args:
@@ -333,7 +332,7 @@ def validate_portfolios_for_create(portfolios: List[Dict]) -> List[Dict]:
 # Profile validation
 
 
-def validate_profile_id(profile_id: Optional[str]) -> str:
+def validate_profile_id(profile_id: str | None) -> str:
     """Validate and return profile ID.
 
     Args:

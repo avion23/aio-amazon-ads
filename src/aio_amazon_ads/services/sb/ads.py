@@ -1,6 +1,7 @@
 """Sponsored Brands ads service."""
 
-from typing import Any, AsyncGenerator, Dict, List
+import builtins
+from collections.abc import AsyncGenerator
 
 from ...base import BaseService
 
@@ -8,7 +9,7 @@ from ...base import BaseService
 class Ads(BaseService):
     """Sponsored Brands ad management."""
 
-    async def list(self, **filters) -> AsyncGenerator[Dict, None]:
+    async def list(self, **filters) -> AsyncGenerator[dict, None]:
         """List Sponsored Brands ads with auto-pagination.
 
         Args:
@@ -28,7 +29,7 @@ class Ads(BaseService):
                 break
             params["nextToken"] = next_token
 
-    async def get(self, ad_id: str) -> Dict:
+    async def get(self, ad_id: str) -> dict:
         """Get a specific Sponsored Brands ad.
 
         Args:
@@ -43,7 +44,7 @@ class Ads(BaseService):
         response = await self._request("GET", f"/v2/sb/ads/{ad_id}")
         return response.json()
 
-    async def create(self, ads: List[Dict]) -> List[Dict]:
+    async def create(self, ads: builtins.list[dict]) -> builtins.list[dict]:
         """Create Sponsored Brands ads.
 
         Args:
@@ -58,7 +59,7 @@ class Ads(BaseService):
         response = await self._request("POST", "/v2/sb/ads", json_data=ads)
         return response.json()
 
-    async def edit(self, ads: List[Dict]) -> List[Dict]:
+    async def edit(self, ads: builtins.list[dict]) -> builtins.list[dict]:
         """Edit Sponsored Brands ads.
 
         Args:

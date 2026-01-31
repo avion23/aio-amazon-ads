@@ -1,29 +1,48 @@
 """Main Amazon Ads client with namespaced services."""
 
-from typing import Optional
 
 from .base import BaseClient, Marketplace
-from .services.sp import (
-    Campaigns as SPCampaigns,
-    AdGroups as SPAdGroups,
-    Keywords as SPKeywords,
-    ProductAds as SPProductAds,
-    NegativeKeywords as SPNegativeKeywords,
-    Targets as SPTargets,
-    Reports as SPReports,
+from .services.portfolios import Portfolios
+from .services.profiles import Profiles
+from .services.sb import (
+    AdGroups as SBAdGroups,
+)
+from .services.sb import (
+    Ads as SBAds,
 )
 from .services.sb import (
     Campaigns as SBCampaigns,
-    AdGroups as SBAdGroups,
+)
+from .services.sb import (
     Keywords as SBKeywords,
-    Ads as SBAds,
+)
+from .services.sd import (
+    AdGroups as SDAdGroups,
 )
 from .services.sd import (
     Campaigns as SDCampaigns,
-    AdGroups as SDAdGroups,
 )
-from .services.portfolios import Portfolios
-from .services.profiles import Profiles
+from .services.sp import (
+    AdGroups as SPAdGroups,
+)
+from .services.sp import (
+    Campaigns as SPCampaigns,
+)
+from .services.sp import (
+    Keywords as SPKeywords,
+)
+from .services.sp import (
+    NegativeKeywords as SPNegativeKeywords,
+)
+from .services.sp import (
+    ProductAds as SPProductAds,
+)
+from .services.sp import (
+    Reports as SPReports,
+)
+from .services.sp import (
+    Targets as SPTargets,
+)
 
 
 class AmazonAdsClient(BaseClient):

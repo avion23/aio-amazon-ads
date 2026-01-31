@@ -1,6 +1,6 @@
 """aio-amazon-ads: Unofficial native async Python client for Amazon Advertising API."""
 
-from .base import Marketplace, COUNTRY_TO_MARKETPLACE
+from .base import COUNTRY_TO_MARKETPLACE, Marketplace
 from .client import AmazonAdsClient
 from .exceptions import (
     AmazonAPIError,

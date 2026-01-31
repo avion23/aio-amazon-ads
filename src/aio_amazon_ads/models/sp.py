@@ -1,5 +1,5 @@
+
 from pydantic import BaseModel, Field
-from typing import Optional, List
 
 
 class Campaign(BaseModel):
@@ -10,8 +10,8 @@ class Campaign(BaseModel):
     state: str = Field(..., description="Campaign state (e.g., 'ENABLED', 'PAUSED', 'ARCHIVED')")
     dailyBudget: float
     startDate: str = Field(..., description="Start date in YYYYMMDD format")
-    endDate: Optional[str] = Field(None, description="End date in YYYYMMDD format")
-    premiumBidAdjustment: Optional[bool] = None
+    endDate: str | None = Field(None, description="End date in YYYYMMDD format")
+    premiumBidAdjustment: bool | None = None
 
     class Config:
         extra = "ignore"
@@ -24,8 +24,8 @@ class CampaignCreate(BaseModel):
     state: str = Field(default="ENABLED", description="Campaign state (e.g., 'ENABLED', 'PAUSED')")
     dailyBudget: float
     startDate: str = Field(..., description="Start date in YYYYMMDD format")
-    endDate: Optional[str] = Field(None, description="End date in YYYYMMDD format")
-    premiumBidAdjustment: Optional[bool] = None
+    endDate: str | None = Field(None, description="End date in YYYYMMDD format")
+    premiumBidAdjustment: bool | None = None
 
     class Config:
         extra = "ignore"
@@ -33,12 +33,12 @@ class CampaignCreate(BaseModel):
 
 class CampaignUpdate(BaseModel):
     campaignId: str
-    name: Optional[str] = None
-    state: Optional[str] = Field(None, description="Campaign state (e.g., 'ENABLED', 'PAUSED')")
-    dailyBudget: Optional[float] = None
-    startDate: Optional[str] = Field(None, description="Start date in YYYYMMDD format")
-    endDate: Optional[str] = Field(None, description="End date in YYYYMMDD format")
-    premiumBidAdjustment: Optional[bool] = None
+    name: str | None = None
+    state: str | None = Field(None, description="Campaign state (e.g., 'ENABLED', 'PAUSED')")
+    dailyBudget: float | None = None
+    startDate: str | None = Field(None, description="Start date in YYYYMMDD format")
+    endDate: str | None = Field(None, description="End date in YYYYMMDD format")
+    premiumBidAdjustment: bool | None = None
 
     class Config:
         extra = "ignore"
@@ -67,9 +67,9 @@ class AdGroupCreate(BaseModel):
 
 class AdGroupUpdate(BaseModel):
     adGroupId: str
-    name: Optional[str] = None
-    state: Optional[str] = Field(None, description="Ad group state (e.g., 'ENABLED', 'PAUSED')")
-    defaultBid: Optional[float] = None
+    name: str | None = None
+    state: str | None = Field(None, description="Ad group state (e.g., 'ENABLED', 'PAUSED')")
+    defaultBid: float | None = None
 
     class Config:
         extra = "ignore"
@@ -102,8 +102,8 @@ class KeywordCreate(BaseModel):
 
 class KeywordUpdate(BaseModel):
     keywordId: str
-    state: Optional[str] = Field(None, description="Keyword state (e.g., 'ENABLED', 'PAUSED')")
-    bid: Optional[float] = None
+    state: str | None = Field(None, description="Keyword state (e.g., 'ENABLED', 'PAUSED')")
+    bid: float | None = None
 
     class Config:
         extra = "ignore"
@@ -113,8 +113,8 @@ class ProductAd(BaseModel):
     adId: str
     campaignId: str
     adGroupId: str
-    sku: Optional[str] = None
-    asin: Optional[str] = None
+    sku: str | None = None
+    asin: str | None = None
     state: str = Field(..., description="Ad state (e.g., 'ENABLED', 'PAUSED', 'ARCHIVED')")
 
     class Config:
@@ -124,8 +124,8 @@ class ProductAd(BaseModel):
 class ProductAdCreate(BaseModel):
     campaignId: str
     adGroupId: str
-    sku: Optional[str] = None
-    asin: Optional[str] = None
+    sku: str | None = None
+    asin: str | None = None
     state: str = Field(default="ENABLED", description="Ad state (e.g., 'ENABLED', 'PAUSED')")
 
     class Config:
@@ -134,7 +134,7 @@ class ProductAdCreate(BaseModel):
 
 class ProductAdUpdate(BaseModel):
     adId: str
-    state: Optional[str] = Field(None, description="Ad state (e.g., 'ENABLED', 'PAUSED')")
+    state: str | None = Field(None, description="Ad state (e.g., 'ENABLED', 'PAUSED')")
 
     class Config:
         extra = "ignore"
@@ -142,8 +142,8 @@ class ProductAdUpdate(BaseModel):
 
 class NegativeKeyword(BaseModel):
     keywordId: str
-    campaignId: Optional[str] = None
-    adGroupId: Optional[str] = None
+    campaignId: str | None = None
+    adGroupId: str | None = None
     keywordText: str
     matchType: str = Field(..., description="Match type (e.g., 'negativeExact', 'negativePhrase')")
     state: str = Field(..., description="Keyword state (e.g., 'ENABLED', 'PAUSED', 'ARCHIVED')")
@@ -153,8 +153,8 @@ class NegativeKeyword(BaseModel):
 
 
 class NegativeKeywordCreate(BaseModel):
-    campaignId: Optional[str] = None
-    adGroupId: Optional[str] = None
+    campaignId: str | None = None
+    adGroupId: str | None = None
     keywordText: str
     matchType: str = Field(..., description="Match type (e.g., 'negativeExact', 'negativePhrase')")
     state: str = Field(default="ENABLED", description="Keyword state (e.g., 'ENABLED', 'PAUSED')")
@@ -165,7 +165,7 @@ class NegativeKeywordCreate(BaseModel):
 
 class NegativeKeywordUpdate(BaseModel):
     keywordId: str
-    state: Optional[str] = Field(None, description="Keyword state (e.g., 'ENABLED', 'PAUSED')")
+    state: str | None = Field(None, description="Keyword state (e.g., 'ENABLED', 'PAUSED')")
 
     class Config:
         extra = "ignore"
@@ -174,10 +174,10 @@ class NegativeKeywordUpdate(BaseModel):
 class Target(BaseModel):
     targetId: str
     campaignId: str
-    adGroupId: Optional[str] = None
-    expression: List[dict]
+    adGroupId: str | None = None
+    expression: list[dict]
     state: str = Field(..., description="Target state (e.g., 'ENABLED', 'PAUSED', 'ARCHIVED')")
-    bid: Optional[float] = None
+    bid: float | None = None
 
     class Config:
         extra = "ignore"
@@ -185,10 +185,10 @@ class Target(BaseModel):
 
 class TargetCreate(BaseModel):
     campaignId: str
-    adGroupId: Optional[str] = None
-    expression: List[dict]
+    adGroupId: str | None = None
+    expression: list[dict]
     state: str = Field(default="ENABLED", description="Target state (e.g., 'ENABLED', 'PAUSED')")
-    bid: Optional[float] = None
+    bid: float | None = None
 
     class Config:
         extra = "ignore"
@@ -196,8 +196,8 @@ class TargetCreate(BaseModel):
 
 class TargetUpdate(BaseModel):
     targetId: str
-    state: Optional[str] = Field(None, description="Target state (e.g., 'ENABLED', 'PAUSED')")
-    bid: Optional[float] = None
+    state: str | None = Field(None, description="Target state (e.g., 'ENABLED', 'PAUSED')")
+    bid: float | None = None
 
     class Config:
         extra = "ignore"

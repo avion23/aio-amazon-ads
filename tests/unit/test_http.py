@@ -1,7 +1,8 @@
 """Comprehensive HTTP tests using respx."""
 
-import pytest
 import sys
+
+import pytest
 
 sys.path.insert(0, "src")
 

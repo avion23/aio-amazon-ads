@@ -1,6 +1,8 @@
 """Sponsored Products product ads service."""
 
-from typing import Any, AsyncGenerator, Dict, List, Optional
+import builtins
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from ...base import BaseService
 
@@ -10,10 +12,10 @@ class ProductAds(BaseService):
 
     async def list(
         self,
-        campaign_id_filter: Optional[str] = None,
-        ad_group_id_filter: Optional[str] = None,
-        ad_id_filter: Optional[str] = None,
-    ) -> AsyncGenerator[Dict, None]:
+        campaign_id_filter: str | None = None,
+        ad_group_id_filter: str | None = None,
+        ad_id_filter: str | None = None,
+    ) -> AsyncGenerator[dict, None]:
         """List Sponsored Products product ads.
 
         Args:
@@ -24,7 +26,7 @@ class ProductAds(BaseService):
         Yields:
             Product ad dictionaries
         """
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if campaign_id_filter is not None:
             params["campaignIdFilter"] = campaign_id_filter
         if ad_group_id_filter is not None:
@@ -36,7 +38,7 @@ class ProductAds(BaseService):
         for item in response.json():
             yield item
 
-    async def get(self, ad_id: str) -> Dict:
+    async def get(self, ad_id: str) -> dict:
         """Get a specific Sponsored Products product ad.
 
         Args:
@@ -51,7 +53,7 @@ class ProductAds(BaseService):
         response = await self._request("GET", f"/v2/sp/productAds/{ad_id}")
         return response.json()
 
-    async def create(self, ads: List[Dict]) -> List[Dict]:
+    async def create(self, ads: builtins.list[dict]) -> builtins.list[dict]:
         """Create Sponsored Products product ads.
 
         Args:
@@ -66,7 +68,7 @@ class ProductAds(BaseService):
         response = await self._request("POST", "/v2/sp/productAds", json_data=ads)
         return response.json()
 
-    async def edit(self, ads: List[Dict]) -> List[Dict]:
+    async def edit(self, ads: builtins.list[dict]) -> builtins.list[dict]:
         """Edit Sponsored Products product ads.
 
         Args:
@@ -85,7 +87,7 @@ class ProductAds(BaseService):
         response = await self._request("PUT", "/v2/sp/productAds", json_data=ads)
         return response.json()
 
-    async def delete(self, ad_id: str) -> Dict:
+    async def delete(self, ad_id: str) -> dict:
         """Delete a Sponsored Products product ad.
 
         Args:

@@ -1,11 +1,12 @@
 """Portfolios service."""
 
-from typing import Any, AsyncGenerator, Dict, List
+import builtins
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from ...base import BaseService
 
-
-Portfolio = Dict[str, Any]
+Portfolio = dict[str, Any]
 
 
 class Portfolios(BaseService):
@@ -46,7 +47,7 @@ class Portfolios(BaseService):
         response = await self._request("GET", f"/v2/portfolios/{portfolio_id}")
         return response.json()
 
-    async def create(self, portfolios: List[Dict]) -> List[Portfolio]:
+    async def create(self, portfolios: builtins.list[dict]) -> builtins.list[Portfolio]:
         """Create portfolios.
 
         Args:
@@ -61,7 +62,7 @@ class Portfolios(BaseService):
         response = await self._request("POST", "/v2/portfolios", json_data=portfolios)
         return response.json()
 
-    async def edit(self, portfolios: List[Dict]) -> List[Portfolio]:
+    async def edit(self, portfolios: builtins.list[dict]) -> builtins.list[Portfolio]:
         """Edit portfolios.
 
         Args:
@@ -80,7 +81,7 @@ class Portfolios(BaseService):
         response = await self._request("PUT", "/v2/portfolios", json_data=portfolios)
         return response.json()
 
-    async def delete(self, portfolio_id: str) -> Dict:
+    async def delete(self, portfolio_id: str) -> dict:
         """Delete a portfolio.
 
         Args:

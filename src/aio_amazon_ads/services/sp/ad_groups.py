@@ -1,6 +1,8 @@
 """Sponsored Products ad groups service."""
 
-from typing import Any, AsyncGenerator, Dict, List, Optional
+import builtins
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from ...base import BaseService
 
@@ -10,9 +12,9 @@ class AdGroups(BaseService):
 
     async def list(
         self,
-        campaign_id_filter: Optional[str] = None,
-        ad_group_id_filter: Optional[str] = None,
-    ) -> AsyncGenerator[Dict[str, Any], None]:
+        campaign_id_filter: str | None = None,
+        ad_group_id_filter: str | None = None,
+    ) -> AsyncGenerator[dict[str, Any], None]:
         """List ad groups with optional filters.
 
         Args:
@@ -28,7 +30,7 @@ class AdGroups(BaseService):
                 yield item
             return
 
-        params: Dict[str, str] = {}
+        params: dict[str, str] = {}
         if campaign_id_filter:
             params["campaignIdFilter"] = campaign_id_filter
         if ad_group_id_filter:
@@ -38,7 +40,7 @@ class AdGroups(BaseService):
         for item in response.json():
             yield item
 
-    async def get(self, ad_group_id: str) -> Dict[str, Any]:
+    async def get(self, ad_group_id: str) -> dict[str, Any]:
         """Get a single ad group by ID.
 
         Args:
@@ -53,7 +55,7 @@ class AdGroups(BaseService):
         response = await self._request("GET", f"/sp/adGroups/{ad_group_id}")
         return response.json()
 
-    async def create(self, ad_groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    async def create(self, ad_groups: builtins.list[dict[str, Any]]) -> builtins.list[dict[str, Any]]:
         """Create new ad groups.
 
         Args:
@@ -68,7 +70,7 @@ class AdGroups(BaseService):
         response = await self._request("POST", "/sp/adGroups", json_data=ad_groups)
         return response.json()
 
-    async def edit(self, ad_groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    async def edit(self, ad_groups: builtins.list[dict[str, Any]]) -> builtins.list[dict[str, Any]]:
         """Update existing ad groups.
 
         Args:
@@ -83,7 +85,7 @@ class AdGroups(BaseService):
         response = await self._request("PUT", "/sp/adGroups", json_data=ad_groups)
         return response.json()
 
-    async def delete(self, ad_group_id: str) -> Dict[str, Any]:
+    async def delete(self, ad_group_id: str) -> dict[str, Any]:
         """Delete an ad group.
 
         Args:

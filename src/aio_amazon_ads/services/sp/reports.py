@@ -1,6 +1,5 @@
 """Sponsored Products reports service."""
 
-from typing import Any, Dict, List
 
 import httpx
 
@@ -10,7 +9,7 @@ from ...base import BaseService
 class Reports(BaseService):
     """Sponsored Products report management."""
 
-    async def create(self, report_date: str, metrics: List[str]) -> str:
+    async def create(self, report_date: str, metrics: list[str]) -> str:
         """Create a Sponsored Products report.
 
         Args:
@@ -33,7 +32,7 @@ class Reports(BaseService):
         response = await self._request("POST", "/v2/sp/reports", json_data=data)
         return response.json()["reportId"]
 
-    async def get_status(self, report_id: str) -> Dict:
+    async def get_status(self, report_id: str) -> dict:
         """Get status of a Sponsored Products report.
 
         Args:

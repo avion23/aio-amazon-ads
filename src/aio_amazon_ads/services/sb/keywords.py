@@ -1,6 +1,7 @@
 """Sponsored Brands keywords service."""
 
-from typing import Any, AsyncGenerator, Dict, List
+import builtins
+from collections.abc import AsyncGenerator
 
 from ...base import BaseService
 
@@ -8,7 +9,7 @@ from ...base import BaseService
 class Keywords(BaseService):
     """Sponsored Brands keyword management."""
 
-    async def list(self, **filters) -> AsyncGenerator[Dict, None]:
+    async def list(self, **filters) -> AsyncGenerator[dict, None]:
         """List Sponsored Brands keywords with auto-pagination.
 
         Args:
@@ -28,7 +29,7 @@ class Keywords(BaseService):
                 break
             params["nextToken"] = next_token
 
-    async def get(self, keyword_id: str) -> Dict:
+    async def get(self, keyword_id: str) -> dict:
         """Get a specific Sponsored Brands keyword.
 
         Args:
@@ -43,7 +44,7 @@ class Keywords(BaseService):
         response = await self._request("GET", f"/v2/sb/keywords/{keyword_id}")
         return response.json()
 
-    async def create(self, keywords: List[Dict]) -> List[Dict]:
+    async def create(self, keywords: builtins.list[dict]) -> builtins.list[dict]:
         """Create Sponsored Brands keywords.
 
         Args:
@@ -58,7 +59,7 @@ class Keywords(BaseService):
         response = await self._request("POST", "/v2/sb/keywords", json_data=keywords)
         return response.json()
 
-    async def edit(self, keywords: List[Dict]) -> List[Dict]:
+    async def edit(self, keywords: builtins.list[dict]) -> builtins.list[dict]:
         """Edit Sponsored Brands keywords.
 
         Args:

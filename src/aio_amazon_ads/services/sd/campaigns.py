@@ -1,6 +1,7 @@
 """Sponsored Display campaigns service."""
 
-from typing import Any, AsyncGenerator, Dict, List
+import builtins
+from collections.abc import AsyncGenerator
 
 from ...base import BaseService
 
@@ -8,7 +9,7 @@ from ...base import BaseService
 class Campaigns(BaseService):
     """Sponsored Display campaign management."""
 
-    async def list(self, **filters) -> AsyncGenerator[Dict, None]:
+    async def list(self, **filters) -> AsyncGenerator[dict, None]:
         """List Sponsored Display campaigns with auto-pagination.
 
         Args:
@@ -28,7 +29,7 @@ class Campaigns(BaseService):
                 break
             params["nextToken"] = next_token
 
-    async def get(self, campaign_id: str) -> Dict:
+    async def get(self, campaign_id: str) -> dict:
         """Get a specific Sponsored Display campaign.
 
         Args:
@@ -43,7 +44,7 @@ class Campaigns(BaseService):
         response = await self._request("GET", f"/v2/sd/campaigns/{campaign_id}")
         return response.json()
 
-    async def create(self, campaigns: List[Dict]) -> List[Dict]:
+    async def create(self, campaigns: builtins.list[dict]) -> builtins.list[dict]:
         """Create Sponsored Display campaigns.
 
         Args:
@@ -58,7 +59,7 @@ class Campaigns(BaseService):
         response = await self._request("POST", "/v2/sd/campaigns", json_data=campaigns)
         return response.json()
 
-    async def edit(self, campaigns: List[Dict]) -> List[Dict]:
+    async def edit(self, campaigns: builtins.list[dict]) -> builtins.list[dict]:
         """Edit Sponsored Display campaigns.
 
         Args:
@@ -77,7 +78,7 @@ class Campaigns(BaseService):
         response = await self._request("PUT", "/v2/sd/campaigns", json_data=campaigns)
         return response.json()
 
-    async def delete(self, campaign_id: str) -> Dict:
+    async def delete(self, campaign_id: str) -> dict:
         """Delete a Sponsored Display campaign.
 
         Args:

@@ -1,12 +1,12 @@
 """Test core client functionality."""
 
-import pytest
 import sys
+
+import pytest
 
 sys.path.insert(0, "src")
 
 from aio_amazon_ads import AmazonAdsClient
-from aio_amazon_ads.exceptions import AuthenticationError, ThrottlingError
 
 
 class TestClientInitialization:
@@ -94,7 +94,6 @@ class TestAsyncGeneratorInterface:
     @pytest.mark.asyncio
     async def test_sp_campaigns_list_is_async_generator(self):
         """Test SP campaigns list returns AsyncGenerator."""
-        from typing import AsyncGenerator
         import inspect
 
         async with AmazonAdsClient(

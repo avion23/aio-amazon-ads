@@ -1,6 +1,8 @@
 """Sponsored Products campaigns service."""
 
-from typing import Any, AsyncGenerator, Dict, List, Optional
+import builtins
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from ...base import BaseService
 
@@ -10,9 +12,9 @@ class Campaigns(BaseService):
 
     async def list(
         self,
-        state_filter: Optional[str] = None,
-        campaign_id_filter: Optional[str] = None,
-    ) -> AsyncGenerator[Dict, None]:
+        state_filter: str | None = None,
+        campaign_id_filter: str | None = None,
+    ) -> AsyncGenerator[dict, None]:
         """List Sponsored Products campaigns with auto-pagination.
 
         Args:
@@ -26,7 +28,7 @@ class Campaigns(BaseService):
 
         validate_campaign_state(state_filter)
 
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if state_filter is not None:
             params["stateFilter"] = state_filter
         if campaign_id_filter is not None:
@@ -50,7 +52,7 @@ class Campaigns(BaseService):
                 break
             params["nextToken"] = next_token
 
-    async def get(self, campaign_id: str) -> Dict:
+    async def get(self, campaign_id: str) -> dict:
         """Get a specific Sponsored Products campaign.
 
         Args:
@@ -65,7 +67,7 @@ class Campaigns(BaseService):
         response = await self._request("GET", f"/v2/sp/campaigns/{campaign_id}")
         return response.json()
 
-    async def create(self, campaigns: List[Dict]) -> List[Dict]:
+    async def create(self, campaigns: builtins.list[dict]) -> builtins.list[dict]:
         """Create Sponsored Products campaigns.
 
         Args:
@@ -80,7 +82,7 @@ class Campaigns(BaseService):
         response = await self._request("POST", "/v2/sp/campaigns", json_data=campaigns)
         return response.json()
 
-    async def edit(self, campaigns: List[Dict]) -> List[Dict]:
+    async def edit(self, campaigns: builtins.list[dict]) -> builtins.list[dict]:
         """Edit Sponsored Products campaigns.
 
         Args:
@@ -99,7 +101,7 @@ class Campaigns(BaseService):
         response = await self._request("PUT", "/v2/sp/campaigns", json_data=campaigns)
         return response.json()
 
-    async def delete(self, campaign_id: str) -> Dict:
+    async def delete(self, campaign_id: str) -> dict:
         """Delete a Sponsored Products campaign.
 
         Args:

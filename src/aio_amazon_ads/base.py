@@ -9,16 +9,17 @@ Supports multiple marketplaces:
 import asyncio
 import logging
 import time
+from collections.abc import Callable
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 import httpx
 from tenacity import (
+    before_sleep_log,
     retry,
+    retry_if_exception_type,
     stop_after_attempt,
     wait_exponential_jitter,
-    retry_if_exception_type,
-    before_sleep_log,
 )
 
 from .exceptions import (
@@ -47,7 +48,7 @@ class Marketplace(Enum):
 
 
 # Country code to marketplace mapping
-COUNTRY_TO_MARKETPLACE: Dict[str, Marketplace] = {
+COUNTRY_TO_MARKETPLACE: dict[str, Marketplace] = {
     # North America
     "US": Marketplace.NA,
     "CA": Marketplace.NA,
@@ -102,10 +103,10 @@ class BaseClient:
         self.marketplace = marketplace
         self.base_url = marketplace.value
 
-        self._http: Optional[httpx.AsyncClient] = None
+        self._http: httpx.AsyncClient | None = None
         self._http_lock = asyncio.Lock()
         self._token_lock = asyncio.Lock()
-        self._access_token: Optional[str] = None
+        self._access_token: str | None = None
         self._token_expires_at: float = 0
 
     async def _get_http(self) -> httpx.AsyncClient:
@@ -209,8 +210,8 @@ class BaseClient:
         self,
         method: str,
         path: str,
-        params: Optional[Dict] = None,
-        json_data: Optional[Any] = None,
+        params: dict | None = None,
+        json_data: Any | None = None,
     ) -> httpx.Response:
         """Make HTTP request with automatic retry via tenacity."""
         logger.debug(f"Request: {method} {path} params={params}")
@@ -250,7 +251,7 @@ class BaseClient:
             logger.warning(
                 f"Rate limited (X-Amzn-Request-Id: {request_id}), retry after {retry_after}s"
             )
-            raise ThrottlingError(f"Rate limited", retry_after=retry_after)
+            raise ThrottlingError("Rate limited", retry_after=retry_after)
 
         # Handle other errors
         if response.status_code >= 400:

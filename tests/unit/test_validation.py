@@ -30,13 +30,13 @@ from aio_amazon_ads.validation import (
     validate_portfolio_id,
     validate_portfolios_for_create,
     validate_portfolios_for_update,
-    validate_profile_id,
-    validate_target_id,
-    validate_targets_for_create,
-    validate_targets_for_update,
-    validate_targeting_type,
     validate_product_ads_for_create,
     validate_product_ads_for_update,
+    validate_profile_id,
+    validate_target_id,
+    validate_targeting_type,
+    validate_targets_for_create,
+    validate_targets_for_update,
 )
 
 

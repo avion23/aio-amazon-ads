@@ -71,7 +71,7 @@ async def test_multi_page_pagination_campaigns(client):
                 },
             )
 
-    route = respx.get("https://advertising-api.amazon.com/v2/sp/campaigns").mock(
+    route = respx.get("https://advertising-api.amazon.com/v2/sp/campaigns").mock(  # noqa: F841
         side_effect=pagination_handler
     )
 

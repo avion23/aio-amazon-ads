@@ -1,0 +1,100 @@
+"""Sponsored Products targets service."""
+
+from typing import Any, Dict, List, Optional
+
+from ...base import BaseService
+
+
+class Targets(BaseService):
+    """Sponsored Products target management."""
+
+    async def list(
+        self,
+        campaign_id_filter: Optional[str] = None,
+        ad_group_id_filter: Optional[str] = None,
+        target_id_filter: Optional[str] = None,
+    ) -> List[Dict]:
+        """List Sponsored Products targets.
+
+        Args:
+            campaign_id_filter: Filter by campaign ID
+            ad_group_id_filter: Filter by ad group ID
+            target_id_filter: Filter by target ID
+
+        Returns:
+            List of target dictionaries
+        """
+        params: Dict[str, Any] = {}
+        if campaign_id_filter is not None:
+            params["campaignIdFilter"] = campaign_id_filter
+        if ad_group_id_filter is not None:
+            params["adGroupIdFilter"] = ad_group_id_filter
+        if target_id_filter is not None:
+            params["targetIdFilter"] = target_id_filter
+
+        response = await self._request("GET", "/v2/sp/targets", params=params)
+        return response.json()
+
+    async def get(self, target_id: str) -> Dict:
+        """Get a specific Sponsored Products target.
+
+        Args:
+            target_id: Target identifier
+
+        Returns:
+            Target dictionary
+        """
+        if not target_id:
+            raise ValueError("target_id is required")
+
+        response = await self._request("GET", f"/v2/sp/targets/{target_id}")
+        return response.json()
+
+    async def create(self, targets: List[Dict]) -> List[Dict]:
+        """Create Sponsored Products targets.
+
+        Args:
+            targets: List of target objects to create
+
+        Returns:
+            List of created target dictionaries
+        """
+        if not targets:
+            raise ValueError("targets list cannot be empty")
+
+        response = await self._request("POST", "/v2/sp/targets", json_data=targets)
+        return response.json()
+
+    async def edit(self, targets: List[Dict]) -> List[Dict]:
+        """Edit Sponsored Products targets.
+
+        Args:
+            targets: List of target objects to update
+
+        Returns:
+            List of updated target dictionaries
+        """
+        if not targets:
+            raise ValueError("targets list cannot be empty")
+
+        for target in targets:
+            if "targetId" not in target:
+                raise ValueError("Each target must have targetId")
+
+        response = await self._request("PUT", "/v2/sp/targets", json_data=targets)
+        return response.json()
+
+    async def delete(self, target_id: str) -> Dict:
+        """Delete a Sponsored Products target.
+
+        Args:
+            target_id: Target identifier
+
+        Returns:
+            Deletion response dictionary
+        """
+        if not target_id:
+            raise ValueError("target_id is required")
+
+        response = await self._request("DELETE", f"/v2/sp/targets/{target_id}")
+        return response.json()

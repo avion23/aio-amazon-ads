@@ -5,6 +5,11 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 from ...base import BaseService
+from ...validation import (
+    validate_portfolio_id,
+    validate_portfolios_for_create,
+    validate_portfolios_for_update,
+)
 
 Portfolio = dict[str, Any]
 
@@ -12,7 +17,7 @@ Portfolio = dict[str, Any]
 class Portfolios(BaseService):
     """Portfolio management service."""
 
-    async def list(self, **filters) -> AsyncGenerator[Portfolio, None]:
+    async def list(self, **filters: Any) -> AsyncGenerator[Portfolio, None]:
         """List portfolios with auto-pagination.
 
         Args:
@@ -41,8 +46,6 @@ class Portfolios(BaseService):
         Returns:
             Portfolio dictionary
         """
-        from ...validation import validate_portfolio_id
-
         validate_portfolio_id(portfolio_id)
 
         response = await self._request("GET", f"/v2/portfolios/{portfolio_id}")
@@ -57,8 +60,6 @@ class Portfolios(BaseService):
         Returns:
             List of created portfolio dictionaries
         """
-        from ...validation import validate_portfolios_for_create
-
         validate_portfolios_for_create(portfolios)
 
         response = await self._request("POST", "/v2/portfolios", json_data=portfolios)
@@ -73,8 +74,6 @@ class Portfolios(BaseService):
         Returns:
             List of updated portfolio dictionaries
         """
-        from ...validation import validate_portfolios_for_update
-
         validate_portfolios_for_update(portfolios)
 
         response = await self._request("PUT", "/v2/portfolios", json_data=portfolios)
@@ -89,8 +88,6 @@ class Portfolios(BaseService):
         Returns:
             Deletion response dictionary
         """
-        from ...validation import validate_portfolio_id
-
         validate_portfolio_id(portfolio_id)
 
         response = await self._request("DELETE", f"/v2/portfolios/{portfolio_id}")

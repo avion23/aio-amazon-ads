@@ -3,6 +3,7 @@
 from pydantic import BaseModel
 
 from ...base import BaseService
+from ...validation import validate_profile_id
 
 
 class Profile(BaseModel):
@@ -38,8 +39,6 @@ class Profiles(BaseService):
         Returns:
             Profile dictionary
         """
-        from ...validation import validate_profile_id
-
         validate_profile_id(profile_id)
 
         response = await self._request("GET", f"/v2/profiles/{profile_id}")

@@ -2,14 +2,20 @@
 
 import builtins
 from collections.abc import AsyncGenerator
+from typing import Any
 
 from ...base import BaseService
+from ...validation import (
+    validate_ad_id,
+    validate_product_ads_for_create,
+    validate_product_ads_for_update,
+)
 
 
 class Ads(BaseService):
     """Sponsored Brands ad management."""
 
-    async def list(self, **filters) -> AsyncGenerator[dict, None]:
+    async def list(self, **filters: Any) -> AsyncGenerator[dict, None]:
         """List Sponsored Brands ads with auto-pagination.
 
         Args:
@@ -38,8 +44,6 @@ class Ads(BaseService):
         Returns:
             Ad dictionary
         """
-        from ...validation import validate_ad_id
-
         validate_ad_id(ad_id)
 
         response = await self._request("GET", f"/v2/sb/ads/{ad_id}")
@@ -54,8 +58,6 @@ class Ads(BaseService):
         Returns:
             List of created ad dictionaries
         """
-        from ...validation import validate_product_ads_for_create
-
         validate_product_ads_for_create(ads)
 
         response = await self._request("POST", "/v2/sb/ads", json_data=ads)
@@ -70,8 +72,6 @@ class Ads(BaseService):
         Returns:
             List of updated ad dictionaries
         """
-        from ...validation import validate_product_ads_for_update
-
         validate_product_ads_for_update(ads)
 
         response = await self._request("PUT", "/v2/sb/ads", json_data=ads)

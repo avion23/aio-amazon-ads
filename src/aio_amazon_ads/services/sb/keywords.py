@@ -2,14 +2,20 @@
 
 import builtins
 from collections.abc import AsyncGenerator
+from typing import Any
 
 from ...base import BaseService
+from ...validation import (
+    validate_keyword_id,
+    validate_keywords_for_create,
+    validate_keywords_for_update,
+)
 
 
 class Keywords(BaseService):
     """Sponsored Brands keyword management."""
 
-    async def list(self, **filters) -> AsyncGenerator[dict, None]:
+    async def list(self, **filters: Any) -> AsyncGenerator[dict, None]:
         """List Sponsored Brands keywords with auto-pagination.
 
         Args:
@@ -38,8 +44,6 @@ class Keywords(BaseService):
         Returns:
             Keyword dictionary
         """
-        from ...validation import validate_keyword_id
-
         validate_keyword_id(keyword_id)
 
         response = await self._request("GET", f"/v2/sb/keywords/{keyword_id}")
@@ -54,8 +58,6 @@ class Keywords(BaseService):
         Returns:
             List of created keyword dictionaries
         """
-        from ...validation import validate_keywords_for_create
-
         validate_keywords_for_create(keywords)
 
         response = await self._request("POST", "/v2/sb/keywords", json_data=keywords)
@@ -70,8 +72,6 @@ class Keywords(BaseService):
         Returns:
             List of updated keyword dictionaries
         """
-        from ...validation import validate_keywords_for_update
-
         validate_keywords_for_update(keywords)
 
         response = await self._request("PUT", "/v2/sb/keywords", json_data=keywords)

@@ -5,6 +5,11 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 from ...base import BaseService
+from ...validation import (
+    validate_ad_id,
+    validate_product_ads_for_create,
+    validate_product_ads_for_update,
+)
 
 
 class ProductAds(BaseService):
@@ -47,8 +52,6 @@ class ProductAds(BaseService):
         Returns:
             Product ad dictionary
         """
-        from ...validation import validate_ad_id
-
         validate_ad_id(ad_id)
 
         response = await self._request("GET", f"/v2/sp/productAds/{ad_id}")
@@ -63,8 +66,6 @@ class ProductAds(BaseService):
         Returns:
             List of created product ad dictionaries
         """
-        from ...validation import validate_product_ads_for_create
-
         validate_product_ads_for_create(ads)
 
         response = await self._request("POST", "/v2/sp/productAds", json_data=ads)
@@ -79,8 +80,6 @@ class ProductAds(BaseService):
         Returns:
             List of updated product ad dictionaries
         """
-        from ...validation import validate_product_ads_for_update
-
         validate_product_ads_for_update(ads)
 
         response = await self._request("PUT", "/v2/sp/productAds", json_data=ads)
@@ -95,8 +94,6 @@ class ProductAds(BaseService):
         Returns:
             Deletion response dictionary
         """
-        from ...validation import validate_ad_id
-
         validate_ad_id(ad_id)
 
         response = await self._request("DELETE", f"/v2/sp/productAds/{ad_id}")

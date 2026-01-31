@@ -5,6 +5,11 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 from ...base import BaseService
+from ...validation import (
+    validate_target_id,
+    validate_targets_for_create,
+    validate_targets_for_update,
+)
 
 
 class Targets(BaseService):
@@ -48,8 +53,6 @@ class Targets(BaseService):
         Returns:
             Target dictionary
         """
-        from ...validation import validate_target_id
-
         validate_target_id(target_id)
 
         response = await self._request("GET", f"/v2/sp/targets/{target_id}")
@@ -64,8 +67,6 @@ class Targets(BaseService):
         Returns:
             List of created target dictionaries
         """
-        from ...validation import validate_targets_for_create
-
         validate_targets_for_create(targets)
 
         response = await self._request("POST", "/v2/sp/targets", json_data=targets)
@@ -80,8 +81,6 @@ class Targets(BaseService):
         Returns:
             List of updated target dictionaries
         """
-        from ...validation import validate_targets_for_update
-
         validate_targets_for_update(targets)
 
         response = await self._request("PUT", "/v2/sp/targets", json_data=targets)
@@ -96,8 +95,6 @@ class Targets(BaseService):
         Returns:
             Deletion response dictionary
         """
-        from ...validation import validate_target_id
-
         validate_target_id(target_id)
 
         response = await self._request("DELETE", f"/v2/sp/targets/{target_id}")

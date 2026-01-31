@@ -132,12 +132,17 @@ class BaseClient:
                 await self._http.aclose()
                 self._http = None
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "BaseClient":
         """Async context manager entry."""
         await self._get_http()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any,
+    ) -> None:
         """Async context manager exit."""
         await self.close()
 
@@ -269,5 +274,5 @@ class BaseClient:
 class BaseService:
     """Base service for API endpoints."""
 
-    def __init__(self, request: Callable):
-        self._request = request
+    def __init__(self, request: Callable[..., Any]):
+        self._request: Callable[..., Any] = request

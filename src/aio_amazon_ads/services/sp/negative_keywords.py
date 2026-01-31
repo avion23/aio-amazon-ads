@@ -5,6 +5,10 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 from ...base import BaseService
+from ...validation import (
+    validate_negative_keywords_for_create,
+    validate_negative_keywords_for_delete,
+)
 
 
 class NegativeKeywords(BaseService):
@@ -43,8 +47,6 @@ class NegativeKeywords(BaseService):
         Returns:
             List of created negative keyword dictionaries
         """
-        from ...validation import validate_negative_keywords_for_create
-
         validate_negative_keywords_for_create(keywords)
 
         response = await self._request("POST", "/v2/sp/negativeKeywords", json_data=keywords)
@@ -59,8 +61,6 @@ class NegativeKeywords(BaseService):
         Returns:
             Deletion response dictionary
         """
-        from ...validation import validate_negative_keywords_for_delete
-
         validate_negative_keywords_for_delete(keyword_id)
 
         response = await self._request("DELETE", f"/v2/sp/negativeKeywords/{keyword_id}")

@@ -5,6 +5,12 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 from ...base import BaseService
+from ...validation import (
+    validate_campaign_id,
+    validate_campaign_state,
+    validate_campaigns_for_create,
+    validate_campaigns_for_update,
+)
 
 
 class Campaigns(BaseService):
@@ -24,8 +30,6 @@ class Campaigns(BaseService):
         Yields:
             Campaign dictionaries
         """
-        from ...validation import validate_campaign_state
-
         validate_campaign_state(state_filter)
 
         params: dict[str, Any] = {}
@@ -61,8 +65,6 @@ class Campaigns(BaseService):
         Returns:
             Campaign dictionary
         """
-        from ...validation import validate_campaign_id
-
         validate_campaign_id(campaign_id)
 
         response = await self._request("GET", f"/v2/sp/campaigns/{campaign_id}")
@@ -77,8 +79,6 @@ class Campaigns(BaseService):
         Returns:
             List of created campaign dictionaries
         """
-        from ...validation import validate_campaigns_for_create
-
         validate_campaigns_for_create(campaigns)
 
         response = await self._request("POST", "/v2/sp/campaigns", json_data=campaigns)
@@ -93,8 +93,6 @@ class Campaigns(BaseService):
         Returns:
             List of updated campaign dictionaries
         """
-        from ...validation import validate_campaigns_for_update
-
         validate_campaigns_for_update(campaigns)
 
         response = await self._request("PUT", "/v2/sp/campaigns", json_data=campaigns)
@@ -109,8 +107,6 @@ class Campaigns(BaseService):
         Returns:
             Deletion response dictionary
         """
-        from ...validation import validate_campaign_id
-
         validate_campaign_id(campaign_id)
 
         response = await self._request("DELETE", f"/v2/sp/campaigns/{campaign_id}")

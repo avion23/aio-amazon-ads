@@ -2,14 +2,19 @@
 
 import builtins
 from collections.abc import AsyncGenerator
+from typing import Any
 
 from ...base import BaseService
+from ...validation import (
+    validate_ad_group_id,
+    validate_ad_groups_for_create,
+)
 
 
 class AdGroups(BaseService):
     """Sponsored Display ad group management."""
 
-    async def list(self, **filters) -> AsyncGenerator[dict, None]:
+    async def list(self, **filters: Any) -> AsyncGenerator[dict, None]:
         """List Sponsored Display ad groups with auto-pagination.
 
         Args:
@@ -38,8 +43,6 @@ class AdGroups(BaseService):
         Returns:
             Ad group dictionary
         """
-        from ...validation import validate_ad_group_id
-
         validate_ad_group_id(ad_group_id)
 
         response = await self._request("GET", f"/v2/sd/adGroups/{ad_group_id}")
@@ -54,8 +57,6 @@ class AdGroups(BaseService):
         Returns:
             List of created ad group dictionaries
         """
-        from ...validation import validate_ad_groups_for_create
-
         validate_ad_groups_for_create(ad_groups)
 
         response = await self._request("POST", "/v2/sd/adGroups", json_data=ad_groups)

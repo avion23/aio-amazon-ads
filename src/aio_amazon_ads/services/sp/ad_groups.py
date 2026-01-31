@@ -5,6 +5,11 @@ from collections.abc import AsyncGenerator
 from typing import Any
 
 from ...base import BaseService
+from ...validation import (
+    validate_ad_group_id,
+    validate_ad_groups_for_create,
+    validate_ad_groups_for_update,
+)
 
 
 class AdGroups(BaseService):
@@ -49,8 +54,6 @@ class AdGroups(BaseService):
         Returns:
             Ad group object
         """
-        from ...validation import validate_ad_group_id
-
         validate_ad_group_id(ad_group_id)
 
         response = await self._request("GET", f"/sp/adGroups/{ad_group_id}")
@@ -67,8 +70,6 @@ class AdGroups(BaseService):
         Returns:
             List of created ad group objects
         """
-        from ...validation import validate_ad_groups_for_create
-
         validate_ad_groups_for_create(ad_groups)
 
         response = await self._request("POST", "/sp/adGroups", json_data=ad_groups)
@@ -83,8 +84,6 @@ class AdGroups(BaseService):
         Returns:
             List of updated ad group objects
         """
-        from ...validation import validate_ad_groups_for_update
-
         validate_ad_groups_for_update(ad_groups)
 
         response = await self._request("PUT", "/sp/adGroups", json_data=ad_groups)
@@ -99,8 +98,6 @@ class AdGroups(BaseService):
         Returns:
             Deletion response
         """
-        from ...validation import validate_ad_group_id
-
         validate_ad_group_id(ad_group_id)
 
         response = await self._request("DELETE", f"/sp/adGroups/{ad_group_id}")

@@ -12,6 +12,18 @@ from .services.sp import (
     Targets as SPTargets,
     Reports as SPReports,
 )
+from .services.sb import (
+    Campaigns as SBCampaigns,
+    AdGroups as SBAdGroups,
+    Keywords as SBKeywords,
+    Ads as SBAds,
+)
+from .services.sd import (
+    Campaigns as SDCampaigns,
+    AdGroups as SDAdGroups,
+)
+from .services.portfolios import Portfolios
+from .services.profiles import Profiles
 
 
 class AmazonAdsClient(BaseClient):
@@ -19,8 +31,10 @@ class AmazonAdsClient(BaseClient):
 
     Provides namespaced access to 70+ endpoints:
     - client.sp.campaigns.list()
-    - client.sp.keywords.create()
-    - etc.
+    - client.sb.campaigns.list()
+    - client.sd.campaigns.list()
+    - client.portfolios.list()
+    - client.profiles.list()
 
     Example:
         async with AmazonAdsClient(
@@ -29,7 +43,9 @@ class AmazonAdsClient(BaseClient):
             client_id="...",
             client_secret="...",
         ) as client:
-            campaigns = await client.sp.campaigns.list()
+            # SP campaigns with auto-pagination
+            async for campaign in client.sp.campaigns.list():
+                print(campaign["name"])
     """
 
     def __init__(
@@ -50,6 +66,18 @@ class AmazonAdsClient(BaseClient):
         # Sponsored Products services
         self.sp = _SPServices(self.request)
 
+        # Sponsored Brands services
+        self.sb = _SBServices(self.request)
+
+        # Sponsored Display services
+        self.sd = _SDServices(self.request)
+
+        # Portfolios service
+        self.portfolios = Portfolios(self.request)
+
+        # Profiles service
+        self.profiles = Profiles(self.request)
+
 
 class _SPServices:
     """Container for Sponsored Products services."""
@@ -62,3 +90,21 @@ class _SPServices:
         self.negative_keywords = SPNegativeKeywords(request)
         self.targets = SPTargets(request)
         self.reports = SPReports(request)
+
+
+class _SBServices:
+    """Container for Sponsored Brands services."""
+
+    def __init__(self, request):
+        self.campaigns = SBCampaigns(request)
+        self.ad_groups = SBAdGroups(request)
+        self.keywords = SBKeywords(request)
+        self.ads = SBAds(request)
+
+
+class _SDServices:
+    """Container for Sponsored Display services."""
+
+    def __init__(self, request):
+        self.campaigns = SDCampaigns(request)
+        self.ad_groups = SDAdGroups(request)

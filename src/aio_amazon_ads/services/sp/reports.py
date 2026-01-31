@@ -1,6 +1,5 @@
 """Sponsored Products reports service."""
 
-
 import httpx
 
 from ...base import BaseService

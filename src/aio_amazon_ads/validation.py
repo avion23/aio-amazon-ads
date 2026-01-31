@@ -3,8 +3,6 @@
 All functions are pure (no side effects) and follow guard clause pattern.
 """
 
-
-
 # Campaign validation
 VALID_CAMPAIGN_STATES = frozenset(["ENABLED", "PAUSED", "ARCHIVED"])
 VALID_TARGETING_TYPES = frozenset(["MANUAL", "AUTO"])

@@ -55,7 +55,9 @@ class AdGroups(BaseService):
         response = await self._request("GET", f"/sp/adGroups/{ad_group_id}")
         return response.json()
 
-    async def create(self, ad_groups: builtins.list[dict[str, Any]]) -> builtins.list[dict[str, Any]]:
+    async def create(
+        self, ad_groups: builtins.list[dict[str, Any]]
+    ) -> builtins.list[dict[str, Any]]:
         """Create new ad groups.
 
         Args:

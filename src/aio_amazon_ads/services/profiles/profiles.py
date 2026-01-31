@@ -1,6 +1,5 @@
 """Profiles service and models."""
 
-
 from pydantic import BaseModel
 
 from ...base import BaseService

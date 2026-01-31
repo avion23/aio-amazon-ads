@@ -37,6 +37,7 @@ class BaseClient:
 
         self._http: Optional[httpx.AsyncClient] = None
         self._http_lock = asyncio.Lock()
+        self._token_lock = asyncio.Lock()
         self._access_token: Optional[str] = None
         self._token_expires_at: float = 0
 
@@ -75,7 +76,13 @@ class BaseClient:
         """Get valid access token, refresh if expired."""
         if self._access_token and time.time() < self._token_expires_at - 60:
             return self._access_token
-        return await self._refresh_token()
+
+        # Use lock to prevent concurrent token refresh
+        async with self._token_lock:
+            # Double-check after acquiring lock
+            if self._access_token and time.time() < self._token_expires_at - 60:
+                return self._access_token
+            return await self._refresh_token()
 
     async def _refresh_token(self) -> str:
         """Refresh OAuth token."""
@@ -94,11 +101,12 @@ class BaseClient:
                 raise AuthenticationError(f"Token refresh failed: {response.text}")
 
             data = response.json()
-            self._access_token = data["access_token"]
+            access_token = data["access_token"]
+            self._access_token = access_token
             expires_in = data.get("expires_in", 3600)
             self._token_expires_at = time.time() + expires_in
 
-            return self._access_token
+            return access_token
 
     def _map_error(self, status_code: int, response_text: str) -> AmazonAPIError:
         """Map HTTP status to exception."""

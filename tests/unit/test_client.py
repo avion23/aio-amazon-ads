@@ -7,8 +7,8 @@ import sys
 
 sys.path.insert(0, "src")
 
-from amzn_ads import AmazonAdsClient
-from amzn_ads.exceptions import AuthenticationError, ThrottlingError
+from aio_amazon_ads import AmazonAdsClient
+from aio_amazon_ads.exceptions import AuthenticationError, ThrottlingError
 
 
 class TestClientInitialization:

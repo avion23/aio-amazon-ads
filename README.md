@@ -1,26 +1,28 @@
-# amzn-ads
+# aio-amazon-ads
 
-Native async Python client for Amazon Advertising API.
+**Unofficial** native async Python client for Amazon Advertising API.
+
+⚠️ **Disclaimer:** This is an unofficial client. It is not affiliated with, endorsed by, or sponsored by Amazon.
 
 ## Features
 
 - **Native async/await**: Built on `httpx` for high-performance concurrent requests
-- **Complete coverage**: 70+ endpoints across Sponsored Products, Brands, and Display
-- **Type-safe**: Full type hints with `msgspec` for fast serialization
-- **Resilient**: Built-in retry logic with exponential backoff
-- **Simple**: Flat API design, minimal abstractions
+- **Type-safe**: Full type hints with Pydantic models for request/response validation
+- **Resilient**: Built-in retry logic with exponential backoff and token refresh
+- **Namespaced API**: Clean interface with `client.sp.campaigns.list()`
+- **Auto-pagination**: Automatically handles paginated responses
 
 ## Installation
 
 ```bash
-pip install amzn-ads
+pip install aio-amazon-ads
 ```
 
 ## Quick Start
 
 ```python
 import asyncio
-from amzn_ads import AmazonAdsClient
+from aio_amazon_ads import AmazonAdsClient
 
 async def main():
     async with AmazonAdsClient(
@@ -29,55 +31,50 @@ async def main():
         client_id="your_client_id",
         client_secret="your_client_secret",
     ) as client:
-        # List campaigns
-        campaigns = await client.list_campaigns_v2()
+        # List campaigns (auto-paginated)
+        campaigns = []
+        async for campaign in client.sp.campaigns.list():
+            campaigns.append(campaign)
         
-        # Create a campaign
-        new_campaign = await client.create_campaign_v2({
-            "name": "My Campaign",
-            "campaignType": "sponsoredProducts",
-            "targetingType": "manual",
-            "state": "enabled",
-            "dailyBudget": 50.0,
-            "startDate": "2026-02-01",
-        })
+        print(f"Found {len(campaigns)} campaigns")
         
-        print(f"Created campaign: {new_campaign['campaignId']}")
+        # Create keywords
+        new_keywords = await client.sp.keywords.create([
+            {
+                "campaignId": 123,
+                "adGroupId": 456,
+                "keywordText": "running shoes",
+                "matchType": "exact",
+                "state": "enabled",
+                "bid": 1.50,
+            }
+        ])
 
 asyncio.run(main())
 ```
 
 ## API Coverage
 
-### Sponsored Products (40 endpoints)
-- Campaigns: list, get, create, edit, delete
-- Ad Groups: list, get, create, edit, delete
-- Keywords: list, get, create, edit, delete
-- Product Ads: list, get, create, edit, delete
-- Negative Keywords: list, create, delete
-- Product Targets: list, get, create, edit, delete
-- Negative Targets: list, create, delete
-- Reports: create, get status, download
-- Snapshots: create, get status, download
+### Sponsored Products V2 (31 endpoints)
+- **Campaigns**: list, get, create, edit, delete
+- **Ad Groups**: list, get, create, edit, delete
+- **Keywords**: list, get, create, edit, delete
+- **Product Ads**: list, get, create, edit, delete
+- **Negative Keywords**: list, create, delete
+- **Targets**: list, get, create, edit, delete
+- **Reports**: create, get_status, download
 
-### Sponsored Brands (15 endpoints)
-- Campaigns: list, get, create, edit, delete
-- Ad Groups: list, get, create, edit
-- Keywords: list, get, create, edit
-- Ads: list, get, create, edit
+## Authentication
 
-### Sponsored Display (10 endpoints)
-- Campaigns: list, get, create, edit, delete
-- Ad Groups: list, get, create
-- Product Ads: list, create
-
-### Portfolios (5 endpoints)
-- list, get, create, edit, delete
+You need Amazon Advertising API credentials:
+- `refresh_token`: From LWA (Login with Amazon) OAuth flow
+- `profile_id`: Your Amazon Advertising profile ID (not Seller/Vendor ID)
+- `client_id` & `client_secret`: From your Amazon Developer account
 
 ## Error Handling
 
 ```python
-from amzn_ads import (
+from aio_amazon_ads import (
     AmazonAdsClient,
     AuthenticationError,
     ThrottlingError,
@@ -86,18 +83,34 @@ from amzn_ads import (
 
 async def safe_api_call():
     try:
-        campaigns = await client.list_campaigns_v2()
+        campaigns = await client.sp.campaigns.list()
     except AuthenticationError:
-        # Refresh token expired
+        # Token expired - will auto-refresh on next call
         pass
     except ThrottlingError as e:
         # Rate limited, retry after e.retry_after seconds
-        pass
+        await asyncio.sleep(e.retry_after)
     except AmazonAPIError as e:
         # Other API errors
-        pass
+        print(f"API error: {e}")
 ```
+
+## Rate Limiting
+
+Amazon Advertising API has strict rate limits:
+- **Sponsored Products**: ~10 requests/second per profile
+- **Sponsored Brands**: ~2 requests/second per profile
+- **Sponsored Display**: ~5 requests/second per profile
+
+This client automatically:
+- Retries on 429 (Too Many Requests) with exponential backoff
+- Respects `Retry-After` headers
+- Prevents concurrent token refresh
 
 ## License
 
 MIT License - see [LICENSE](LICENSE) file.
+
+## Disclaimer
+
+This is an **unofficial** client library. Use at your own risk. Amazon may change their API at any time.

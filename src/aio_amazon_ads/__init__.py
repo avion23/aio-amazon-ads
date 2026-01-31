@@ -1,4 +1,4 @@
-"""amzn-ads: Native async Python client for Amazon Advertising API."""
+"""aio-amazon-ads: Unofficial native async Python client for Amazon Advertising API."""
 
 from .client import AmazonAdsClient
 from .exceptions import (

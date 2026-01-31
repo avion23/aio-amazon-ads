@@ -1,10 +1,14 @@
-"""Test configuration and fixtures for amzn-ads."""
+"""Test configuration and fixtures for aio-amazon-ads."""
 
 import pytest
 from unittest.mock import AsyncMock, MagicMock
 
-from amzn_ads import AmazonAdsClient
-from amzn_ads.exceptions import (
+import sys
+
+sys.path.insert(0, "src")
+
+from aio_amazon_ads import AmazonAdsClient
+from aio_amazon_ads.exceptions import (
     AmazonAPIError,
     AuthenticationError,
     ThrottlingError,

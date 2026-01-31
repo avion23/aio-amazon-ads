@@ -171,8 +171,8 @@ class BaseClient:
             )
 
             if response.status_code != 200:
-                logger.error(f"Token refresh failed: {response.status_code} - {response.text}")
-                raise AuthenticationError(f"Token refresh failed: {response.text}")
+                logger.error(f"Token refresh failed with status {response.status_code}")
+                raise AuthenticationError(f"Token refresh failed: {response.status_code}")
 
             data = response.json()
             access_token = data["access_token"]

@@ -94,6 +94,55 @@ You need Amazon Advertising API credentials:
 - `profile_id`: Your Amazon Advertising profile ID (not Seller/Vendor ID)
 - `client_id` & `client_secret`: From your Amazon Developer account
 
+### Security Best Practices
+
+**Never hardcode credentials in your code.** Use environment variables or a secrets manager:
+
+```python
+import os
+from aio_amazon_ads import AmazonAdsClient
+
+async with AmazonAdsClient(
+    refresh_token=os.environ["AMAZON_ADS_REFRESH_TOKEN"],
+    profile_id=os.environ["AMAZON_ADS_PROFILE_ID"],
+    client_id=os.environ["AMAZON_ADS_CLIENT_ID"],
+    client_secret=os.environ["AMAZON_ADS_CLIENT_SECRET"],
+) as client:
+    campaigns = await client.sp.campaigns.list()
+```
+
+**Using a .env file (with python-dotenv):**
+
+```python
+from dotenv import load_dotenv
+import os
+from aio_amazon_ads import AmazonAdsClient
+
+load_dotenv()
+
+async with AmazonAdsClient(
+    refresh_token=os.getenv("AMAZON_ADS_REFRESH_TOKEN"),
+    profile_id=os.getenv("AMAZON_ADS_PROFILE_ID"),
+    client_id=os.getenv("AMAZON_ADS_CLIENT_ID"),
+    client_secret=os.getenv("AMAZON_ADS_CLIENT_SECRET"),
+) as client:
+    campaigns = await client.sp.campaigns.list()
+```
+
+**.env file example:**
+```bash
+AMAZON_ADS_REFRESH_TOKEN=your_refresh_token_here
+AMAZON_ADS_PROFILE_ID=123456789
+AMAZON_ADS_CLIENT_ID=amzn1.application-oa2-client.xxx
+AMAZON_ADS_CLIENT_SECRET=your_client_secret_here
+```
+
+**Important:**
+- Never commit `.env` files or credentials to version control
+- Add `.env` to your `.gitignore`
+- Use IAM roles or secrets managers (AWS Secrets Manager, Azure Key Vault, etc.) in production
+- Rotate credentials regularly
+
 ## Marketplace Support
 
 The client supports three regional marketplaces:

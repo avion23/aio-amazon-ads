@@ -49,7 +49,10 @@ async def test_list_campaigns_success(client):
         )
     )
 
-    campaigns = await client.sp.campaigns.list()
+    # Now using AsyncGenerator - collect all items
+    campaigns = []
+    async for campaign in client.sp.campaigns.list():
+        campaigns.append(campaign)
 
     assert len(campaigns) == 2
     assert campaigns[0]["campaignId"] == "1"
@@ -118,7 +121,8 @@ async def test_authentication_error(client):
     )
 
     with pytest.raises(AuthenticationError):
-        await client.sp.campaigns.list()
+        async for _ in client.sp.campaigns.list():
+            pass
 
 
 @respx.mock
@@ -146,7 +150,8 @@ async def test_throttling_error(client):
     )
 
     with pytest.raises(ThrottlingError) as exc_info:
-        await client.sp.campaigns.list()
+        async for _ in client.sp.campaigns.list():
+            pass
 
     assert exc_info.value.retry_after == 60
 

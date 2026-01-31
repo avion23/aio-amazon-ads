@@ -1,6 +1,6 @@
 """Sponsored Products negative keywords service."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from ...base import BaseService
 
@@ -12,15 +12,15 @@ class NegativeKeywords(BaseService):
         self,
         campaign_id_filter: Optional[str] = None,
         ad_group_id_filter: Optional[str] = None,
-    ) -> List[Dict]:
+    ) -> AsyncGenerator[Dict, None]:
         """List Sponsored Products negative keywords.
 
         Args:
             campaign_id_filter: Filter by campaign ID
             ad_group_id_filter: Filter by ad group ID
 
-        Returns:
-            List of negative keyword dictionaries
+        Yields:
+            Negative keyword dictionaries
         """
         params: Dict[str, Any] = {}
         if campaign_id_filter is not None:
@@ -29,7 +29,8 @@ class NegativeKeywords(BaseService):
             params["adGroupIdFilter"] = ad_group_id_filter
 
         response = await self._request("GET", "/v2/sp/negativeKeywords", params=params)
-        return response.json()
+        for item in response.json():
+            yield item
 
     async def create(self, keywords: List[Dict]) -> List[Dict]:
         """Create Sponsored Products negative keywords.

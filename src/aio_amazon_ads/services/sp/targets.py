@@ -1,6 +1,6 @@
 """Sponsored Products targets service."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from ...base import BaseService
 
@@ -13,7 +13,7 @@ class Targets(BaseService):
         campaign_id_filter: Optional[str] = None,
         ad_group_id_filter: Optional[str] = None,
         target_id_filter: Optional[str] = None,
-    ) -> List[Dict]:
+    ) -> AsyncGenerator[Dict, None]:
         """List Sponsored Products targets.
 
         Args:
@@ -21,8 +21,8 @@ class Targets(BaseService):
             ad_group_id_filter: Filter by ad group ID
             target_id_filter: Filter by target ID
 
-        Returns:
-            List of target dictionaries
+        Yields:
+            Target dictionaries
         """
         params: Dict[str, Any] = {}
         if campaign_id_filter is not None:
@@ -33,7 +33,9 @@ class Targets(BaseService):
             params["targetIdFilter"] = target_id_filter
 
         response = await self._request("GET", "/v2/sp/targets", params=params)
-        return response.json()
+        targets = response.json()
+        for target in targets:
+            yield target
 
     async def get(self, target_id: str) -> Dict:
         """Get a specific Sponsored Products target.

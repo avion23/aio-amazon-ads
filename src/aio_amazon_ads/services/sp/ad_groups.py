@@ -1,6 +1,6 @@
 """Sponsored Products ad groups service."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from ...base import BaseService
 
@@ -12,19 +12,21 @@ class AdGroups(BaseService):
         self,
         campaign_id_filter: Optional[str] = None,
         ad_group_id_filter: Optional[str] = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> AsyncGenerator[Dict[str, Any], None]:
         """List ad groups with optional filters.
 
         Args:
             campaign_id_filter: Filter by campaign ID
             ad_group_id_filter: Filter by ad group ID
 
-        Returns:
-            List of ad group objects
+        Yields:
+            Ad group dictionaries
         """
         if not campaign_id_filter and not ad_group_id_filter:
             response = await self._request("GET", "/sp/adGroups")
-            return response.json()
+            for item in response.json():
+                yield item
+            return
 
         params: Dict[str, str] = {}
         if campaign_id_filter:
@@ -33,7 +35,8 @@ class AdGroups(BaseService):
             params["adGroupIdFilter"] = ad_group_id_filter
 
         response = await self._request("GET", "/sp/adGroups", params=params)
-        return response.json()
+        for item in response.json():
+            yield item
 
     async def get(self, ad_group_id: str) -> Dict[str, Any]:
         """Get a single ad group by ID.

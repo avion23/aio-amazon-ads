@@ -13,6 +13,13 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
 import httpx
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential_jitter,
+    retry_if_exception_type,
+    before_sleep_log,
+)
 
 from .exceptions import (
     AmazonAPIError,
@@ -134,14 +141,16 @@ class BaseClient:
 
     async def _get_access_token(self) -> str:
         """Get valid access token, refresh if expired."""
-        if self._access_token and time.time() < self._token_expires_at - 60:
+        if self._access_token and time.time() < self._token_expires_at - 300:
             return self._access_token
 
         # Use lock to prevent concurrent token refresh
         async with self._token_lock:
             # Double-check after acquiring lock
-            if self._access_token and time.time() < self._token_expires_at - 60:
+            if self._access_token and time.time() < self._token_expires_at - 300:
                 return self._access_token
+            # Invalidate token before refresh to prevent deadlock
+            self._access_token = None
             return await self._refresh_token()
 
     async def _refresh_token(self) -> str:
@@ -193,18 +202,19 @@ class BaseClient:
     ) -> httpx.Response:
         """Make HTTP request with retry logic."""
         http = await self._get_http()
-        access_token = await self._get_access_token()
-
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "Amazon-Advertising-API-Scope": self.profile_id,
-            "Content-Type": "application/json",
-        }
 
         last_error: Optional[Exception] = None
 
         for attempt in range(retry_count):
             try:
+                access_token = await self._get_access_token()
+
+                headers = {
+                    "Authorization": f"Bearer {access_token}",
+                    "Amazon-Advertising-API-Scope": self.profile_id,
+                    "Content-Type": "application/json",
+                }
+
                 response = await http.request(
                     method=method,
                     url=path,
@@ -212,6 +222,14 @@ class BaseClient:
                     json=json_data,
                     headers=headers,
                 )
+
+                if response.status_code == 401:
+                    if attempt == 0:
+                        # Token may be invalid, invalidate and retry
+                        self._access_token = None
+                        continue
+                    else:
+                        raise AuthenticationError(f"Authentication failed: {response.text}")
 
                 if response.status_code == 429:
                     retry_after = int(response.headers.get("Retry-After", 2**attempt))

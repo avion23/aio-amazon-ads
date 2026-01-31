@@ -1,6 +1,6 @@
 """Sponsored Products campaigns service."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from ...base import BaseService
 
@@ -12,18 +12,19 @@ class Campaigns(BaseService):
         self,
         state_filter: Optional[str] = None,
         campaign_id_filter: Optional[str] = None,
-    ) -> List[Dict]:
-        """List Sponsored Products campaigns.
+    ) -> AsyncGenerator[Dict, None]:
+        """List Sponsored Products campaigns with auto-pagination.
 
         Args:
             state_filter: Filter by campaign state (ENABLED, PAUSED, ARCHIVED)
             campaign_id_filter: Filter by specific campaign ID
 
-        Returns:
-            List of campaign dictionaries
+        Yields:
+            Campaign dictionaries
         """
-        if state_filter is not None and state_filter not in ("ENABLED", "PAUSED", "ARCHIVED"):
-            raise ValueError(f"Invalid state_filter: {state_filter}")
+        from ...validation import validate_campaign_state
+
+        validate_campaign_state(state_filter)
 
         params: Dict[str, Any] = {}
         if state_filter is not None:
@@ -32,7 +33,10 @@ class Campaigns(BaseService):
             params["campaignIdFilter"] = campaign_id_filter
 
         response = await self._request("GET", "/v2/sp/campaigns", params=params)
-        return response.json()
+        campaigns = response.json()
+
+        for campaign in campaigns:
+            yield campaign
 
     async def get(self, campaign_id: str) -> Dict:
         """Get a specific Sponsored Products campaign.

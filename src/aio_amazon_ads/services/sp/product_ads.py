@@ -1,6 +1,6 @@
 """Sponsored Products product ads service."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, AsyncGenerator, Dict, List, Optional
 
 from ...base import BaseService
 
@@ -13,7 +13,7 @@ class ProductAds(BaseService):
         campaign_id_filter: Optional[str] = None,
         ad_group_id_filter: Optional[str] = None,
         ad_id_filter: Optional[str] = None,
-    ) -> List[Dict]:
+    ) -> AsyncGenerator[Dict, None]:
         """List Sponsored Products product ads.
 
         Args:
@@ -21,8 +21,8 @@ class ProductAds(BaseService):
             ad_group_id_filter: Filter by ad group ID
             ad_id_filter: Filter by specific ad ID
 
-        Returns:
-            List of product ad dictionaries
+        Yields:
+            Product ad dictionaries
         """
         params: Dict[str, Any] = {}
         if campaign_id_filter is not None:
@@ -33,7 +33,8 @@ class ProductAds(BaseService):
             params["adIdFilter"] = ad_id_filter
 
         response = await self._request("GET", "/v2/sp/productAds", params=params)
-        return response.json()
+        for item in response.json():
+            yield item
 
     async def get(self, ad_id: str) -> Dict:
         """Get a specific Sponsored Products product ad.

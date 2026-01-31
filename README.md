@@ -10,12 +10,12 @@
 ## Features
 
 - **Native async/await**: Built on `httpx` for high-performance concurrent requests
-- **Type-safe**: Full type hints with Pydantic models for request/response validation
-- **Resilient**: Built-in retry logic with exponential backoff and token refresh
+- **Auto-pagination**: Automatically fetches all pages for list endpoints
+- **Professional retry**: Uses tenacity with exponential backoff and jitter
 - **Namespaced API**: Clean interface with `client.sp.campaigns.list()`
-- **Auto-pagination**: Automatically handles paginated responses
-- **Professional retry**: Uses tenacity for battle-tested retry strategies
-- **Pure validation**: Validation logic extracted to pure functions
+- **Observability**: Comprehensive logging with X-Amzn-Request-Id tracking
+- **Multi-marketplace**: Support for NA, EU, and FE endpoints
+- **Type hints**: Full type annotations throughout
 
 ## Installation
 
@@ -30,13 +30,13 @@ import asyncio
 from aio_amazon_ads import AmazonAdsClient
 
 async def main():
-    async with AmazonAdsClient(
-        refresh_token="your_refresh_token",
-        profile_id="your_profile_id",
-        client_id="your_client_id",
-        client_secret="your_client_secret",
-        marketplace="EU",  # or Marketplace.EU
-    ) as client:
+async with AmazonAdsClient(
+    refresh_token="your_refresh_token",
+    profile_id="your_profile_id",
+    client_id="your_client_id",
+    client_secret="your_client_secret",
+    marketplace=Marketplace.NA,  # or Marketplace.EU, Marketplace.FE
+) as client:
         # List campaigns (auto-paginated)
         campaigns = []
         async for campaign in client.sp.campaigns.list():
@@ -144,6 +144,35 @@ async def safe_api_call():
         print(f"API error: {e}")
 ```
 
+## Retry Logic
+
+The client uses `tenacity` for professional retry handling:
+
+- **Automatic retry**: Network errors, timeouts, rate limiting (429)
+- **Exponential backoff with jitter**: Prevents thundering herd
+- **Max attempts**: 3 retries with configurable wait times
+- **401 handling**: Automatic token refresh and retry
+
+## Observability
+
+The client provides comprehensive logging:
+
+```python
+import logging
+
+# Enable debug logging
+logging.basicConfig(level=logging.DEBUG)
+
+async with AmazonAdsClient(...) as client:
+    # Logs will include:
+    # - Request method, path, and parameters
+    # - X-Amzn-Request-Id for debugging with Amazon support
+    # - Response status and errors
+    # - Token refresh events
+    # - Retry attempts with tenacity
+    campaigns = await client.sp.campaigns.list()
+```
+
 ## Rate Limiting
 
 Amazon Advertising API has strict rate limits:
@@ -151,10 +180,27 @@ Amazon Advertising API has strict rate limits:
 - **Sponsored Brands**: ~2 requests/second per profile
 - **Sponsored Display**: ~5 requests/second per profile
 
-This client automatically:
+The client automatically:
 - Retries on 429 (Too Many Requests) with exponential backoff
 - Respects `Retry-After` headers
 - Prevents concurrent token refresh
+- Logs rate limiting events
+
+## Development Status
+
+**Current Version:** 0.1.0 (Alpha)
+
+**Known Limitations:**
+- Pydantic models exist but are not yet enforced in service responses
+- Input validation is basic (type checking only)
+- No built-in caching for immutable data
+
+**Roadmap:**
+- [ ] Full Pydantic model integration for type safety
+- [ ] Input validation with detailed error messages
+- [ ] Caching for profiles and portfolios
+- [ ] Metrics and monitoring hooks
+- [ ] Additional endpoint coverage
 
 ## Documentation
 

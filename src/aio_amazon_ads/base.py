@@ -155,6 +155,8 @@ class BaseClient:
 
     async def _refresh_token(self) -> str:
         """Refresh OAuth token."""
+        logger.debug("Token refresh started")
+
         async with httpx.AsyncClient() as client:
             response = await client.post(
                 TOKEN_URL,
@@ -167,6 +169,7 @@ class BaseClient:
             )
 
             if response.status_code != 200:
+                logger.error(f"Token refresh failed: {response.status_code} - {response.text}")
                 raise AuthenticationError(f"Token refresh failed: {response.text}")
 
             data = response.json()
@@ -176,6 +179,7 @@ class BaseClient:
             # Subtract 5 minutes for clock skew safety
             self._token_expires_at = time.time() + expires_in - 300
 
+            logger.debug("Token refresh succeeded")
             return access_token
 
     def _map_error(self, status_code: int, response_text: str) -> AmazonAPIError:
@@ -192,70 +196,70 @@ class BaseClient:
         else:
             return AmazonAPIError(f"API error {status_code}: {response_text}")
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential_jitter(initial=1, max=60),
+        retry=retry_if_exception_type(
+            (ThrottlingError, httpx.NetworkError, httpx.TimeoutException)
+        ),
+        before_sleep=before_sleep_log(logger, logging.WARNING),
+        reraise=True,
+    )
     async def request(
         self,
         method: str,
         path: str,
         params: Optional[Dict] = None,
         json_data: Optional[Any] = None,
-        retry_count: int = 3,
     ) -> httpx.Response:
-        """Make HTTP request with retry logic."""
+        """Make HTTP request with automatic retry via tenacity."""
+        logger.debug(f"Request: {method} {path} params={params}")
+
         http = await self._get_http()
+        access_token = await self._get_access_token()
 
-        last_error: Optional[Exception] = None
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Amazon-Advertising-API-Scope": self.profile_id,
+            "Content-Type": "application/json",
+        }
 
-        for attempt in range(retry_count):
-            try:
-                access_token = await self._get_access_token()
+        response = await http.request(
+            method=method,
+            url=path,
+            params=params,
+            json=json_data,
+            headers=headers,
+        )
 
-                headers = {
-                    "Authorization": f"Bearer {access_token}",
-                    "Amazon-Advertising-API-Scope": self.profile_id,
-                    "Content-Type": "application/json",
-                }
+        # Log request ID for debugging
+        request_id = response.headers.get("X-Amzn-Request-Id")
+        logger.debug(f"Response: {response.status_code} (X-Amzn-Request-Id: {request_id})")
 
-                response = await http.request(
-                    method=method,
-                    url=path,
-                    params=params,
-                    json=json_data,
-                    headers=headers,
-                )
+        # Handle 401 - invalidate token and let tenacity retry
+        if response.status_code == 401:
+            logger.error(
+                f"Authentication failed (X-Amzn-Request-Id: {request_id}): {response.text}"
+            )
+            self._access_token = None
+            raise AuthenticationError(f"Authentication failed: {response.text}")
 
-                if response.status_code == 401:
-                    if attempt == 0:
-                        # Token may be invalid, invalidate and retry
-                        self._access_token = None
-                        continue
-                    else:
-                        raise AuthenticationError(f"Authentication failed: {response.text}")
+        # Handle 429 - raise ThrottlingError for tenacity to catch
+        if response.status_code == 429:
+            retry_after = int(response.headers.get("Retry-After", 60))
+            logger.warning(
+                f"Rate limited (X-Amzn-Request-Id: {request_id}), retry after {retry_after}s"
+            )
+            raise ThrottlingError(f"Rate limited", retry_after=retry_after)
 
-                if response.status_code == 429:
-                    retry_after = int(response.headers.get("Retry-After", 2**attempt))
-                    await asyncio.sleep(retry_after)
-                    continue
+        # Handle other errors
+        if response.status_code >= 400:
+            logger.error(
+                f"API error {response.status_code} (X-Amzn-Request-Id: {request_id}): {response.text}"
+            )
+            raise self._map_error(response.status_code, response.text)
 
-                if response.status_code >= 500:
-                    await asyncio.sleep(2**attempt)
-                    continue
-
-                if response.status_code >= 400:
-                    raise self._map_error(response.status_code, response.text)
-
-                return response
-
-            except (httpx.NetworkError, httpx.TimeoutException) as e:
-                last_error = e
-                if attempt < retry_count - 1:
-                    await asyncio.sleep(2**attempt)
-                    continue
-                raise AmazonAPIError(f"Network error after {retry_count} retries: {e}")
-
-        if last_error:
-            raise AmazonAPIError(f"Request failed after {retry_count} retries: {last_error}")
-
-        raise AmazonAPIError("Request failed")
+        return response
 
 
 class BaseService:

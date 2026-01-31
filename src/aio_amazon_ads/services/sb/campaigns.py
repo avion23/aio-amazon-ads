@@ -21,6 +21,12 @@ class Campaigns(BaseService):
         while True:
             response = await self._request("GET", "/v2/sb/campaigns", params=params)
             data = response.json()
+
+            if isinstance(data, list):
+                for campaign in data:
+                    yield campaign
+                break
+
             for campaign in data.get("campaigns", []):
                 yield campaign
             next_token = data.get("nextToken")

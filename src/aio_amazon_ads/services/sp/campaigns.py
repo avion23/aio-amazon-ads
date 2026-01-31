@@ -32,11 +32,23 @@ class Campaigns(BaseService):
         if campaign_id_filter is not None:
             params["campaignIdFilter"] = campaign_id_filter
 
-        response = await self._request("GET", "/v2/sp/campaigns", params=params)
-        campaigns = response.json()
+        while True:
+            response = await self._request("GET", "/v2/sp/campaigns", params=params)
+            data = response.json()
 
-        for campaign in campaigns:
-            yield campaign
+            if isinstance(data, list):
+                campaigns = data
+                next_token = None
+            else:
+                campaigns = data.get("campaigns", [])
+                next_token = data.get("nextToken")
+
+            for campaign in campaigns:
+                yield campaign
+
+            if not next_token:
+                break
+            params["nextToken"] = next_token
 
     async def get(self, campaign_id: str) -> Dict:
         """Get a specific Sponsored Products campaign.
